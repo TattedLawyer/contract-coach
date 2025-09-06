@@ -5,11 +5,14 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
+import { TrainingContractUpload } from "@/components/TrainingContractUpload";
+import { useUserRole } from "@/hooks/useUserRole";
 
 const Index = () => {
   const { user, signOut, loading } = useAuth();
   const { toast } = useToast();
   const [assigningAdmin, setAssigningAdmin] = useState(false);
+  const { isAdmin } = useUserRole();
 
   const handleAssignAdmin = async () => {
     setAssigningAdmin(true);
@@ -142,6 +145,12 @@ const Index = () => {
             </Button>
           </div>
         </div>
+
+        {isAdmin && (
+          <div className="mb-8">
+            <TrainingContractUpload />
+          </div>
+        )}
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Card className="cursor-pointer hover:shadow-lg transition-shadow">

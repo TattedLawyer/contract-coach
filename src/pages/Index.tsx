@@ -2,9 +2,42 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 const Index = () => {
   const { user, signOut, loading } = useAuth();
+  const { toast } = useToast();
+  const [assigningAdmin, setAssigningAdmin] = useState(false);
+
+  const handleAssignAdmin = async () => {
+    setAssigningAdmin(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('assign-admin');
+      
+      if (error) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: "Admin role assigned successfully!",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to assign admin role",
+        variant: "destructive",
+      });
+    } finally {
+      setAssigningAdmin(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -94,9 +127,20 @@ const Index = () => {
             <h1 className="text-4xl font-bold">Welcome back!</h1>
             <p className="text-muted-foreground">{user.email}</p>
           </div>
-          <Button onClick={signOut} variant="outline">
-            Sign Out
-          </Button>
+          <div className="flex gap-2">
+            {user.email === 'tatted@mnnt.io' && (
+              <Button 
+                onClick={handleAssignAdmin} 
+                disabled={assigningAdmin}
+                variant="secondary"
+              >
+                {assigningAdmin ? 'Assigning...' : 'Assign Admin Role'}
+              </Button>
+            )}
+            <Button onClick={signOut} variant="outline">
+              Sign Out
+            </Button>
+          </div>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">

@@ -82,18 +82,28 @@ export const TrainingContractUpload = () => {
         const file = files[i];
         
         try {
+          console.log('Starting upload for file:', file.name);
           const fileExt = file.name.split('.').pop();
           const fileName = `${Date.now()}-${i}.${fileExt}`;
           const filePath = `contracts/${fileName}`;
 
           // Upload to storage
+          console.log('Uploading to storage:', filePath);
           const { error: uploadError } = await supabase.storage
             .from('training-contracts')
             .upload(filePath, file);
 
-          if (uploadError) throw uploadError;
+          if (uploadError) {
+            console.error('Storage upload error:', uploadError);
+            throw uploadError;
+          }
+          console.log('Storage upload successful for:', file.name);
 
           // Save metadata to database
+          console.log('Saving metadata to database for:', file.name);
+          const currentUser = await supabase.auth.getUser();
+          console.log('Current user:', currentUser.data.user?.id);
+          
           const { error: dbError } = await supabase
             .from('training_contracts')
             .insert({
@@ -101,11 +111,15 @@ export const TrainingContractUpload = () => {
               file_path: filePath,
               contract_type: contractType || null,
               description: description || null,
-              uploaded_by: (await supabase.auth.getUser()).data.user?.id,
+              uploaded_by: currentUser.data.user?.id,
               file_size: file.size
             });
 
-          if (dbError) throw dbError;
+          if (dbError) {
+            console.error('Database insert error:', dbError);
+            throw dbError;
+          }
+          console.log('Database insert successful for:', file.name);
 
           // Update file status to success
           setFiles(prevFiles => prevFiles.map(f => 

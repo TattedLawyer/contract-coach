@@ -50,6 +50,42 @@ export type Database = {
         }
         Relationships: []
       }
+      training_contracts: {
+        Row: {
+          contract_type: string | null
+          created_at: string
+          description: string | null
+          file_name: string
+          file_path: string
+          file_size: number | null
+          id: string
+          updated_at: string
+          uploaded_by: string
+        }
+        Insert: {
+          contract_type?: string | null
+          created_at?: string
+          description?: string | null
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          id?: string
+          updated_at?: string
+          uploaded_by: string
+        }
+        Update: {
+          contract_type?: string | null
+          created_at?: string
+          description?: string | null
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          id?: string
+          updated_at?: string
+          uploaded_by?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string

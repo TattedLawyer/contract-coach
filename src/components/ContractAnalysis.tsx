@@ -8,6 +8,11 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { FileText, Brain, CheckCircle, Loader2, Upload, X } from "lucide-react";
 import { useDropzone } from "react-dropzone";
+import * as pdfjsLib from "pdfjs-dist";
+import mammoth from "mammoth";
+
+// Configure PDF.js worker
+pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
 export const ContractAnalysis = () => {
   const [contractText, setContractText] = useState("");
@@ -44,38 +49,27 @@ export const ContractAnalysis = () => {
     setIsProcessingFile(true);
 
     try {
-      // For text files, read directly
+      let extractedText = "";
+
       if (file.type === 'text/plain') {
-        const text = await file.text();
-        setContractText(text);
-      } else {
-        // For PDF/Word files, we'll need to extract text server-side
-        const fileExt = file.name.split('.').pop();
-        const fileName = `analysis-${Date.now()}.${fileExt}`;
-        const filePath = `temp-analysis/${fileName}`;
-
-        // Upload file temporarily
-        const { error: uploadError } = await supabase.storage
-          .from('training-contracts')
-          .upload(filePath, file);
-
-        if (uploadError) throw uploadError;
-
-        // Call edge function to extract text
-        const { data, error } = await supabase.functions.invoke('extract-text', {
-          body: { filePath }
-        });
-
-        if (error) throw error;
-
-        setContractText(data.extractedText);
-
-        // Clean up temporary file
-        await supabase.storage
-          .from('training-contracts')
-          .remove([filePath]);
+        // Text files - read directly
+        extractedText = await file.text();
+      } else if (file.type === 'application/pdf') {
+        // PDF files - extract using PDF.js
+        extractedText = await extractTextFromPDF(file);
+      } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+        // DOCX files - extract using mammoth
+        extractedText = await extractTextFromDOCX(file);
+      } else if (file.type === 'application/msword') {
+        // Legacy DOC files not supported
+        throw new Error("Legacy .doc files are not supported. Please save as .docx or copy/paste the text.");
       }
 
+      if (!extractedText.trim()) {
+        throw new Error("No readable text found in the file. Please try copying and pasting the text manually.");
+      }
+
+      setContractText(extractedText);
       toast({
         title: "File Processed",
         description: "Contract text extracted successfully.",
@@ -84,13 +78,37 @@ export const ContractAnalysis = () => {
       console.error('File processing error:', error);
       toast({
         title: "Processing Failed",
-        description: "Failed to extract text from file. Please try pasting the text directly.",
+        description: error.message || "Failed to extract text from file. Please try pasting the text directly.",
         variant: "destructive",
       });
     } finally {
       setIsProcessingFile(false);
     }
   }, [toast]);
+
+  const extractTextFromPDF = async (file: File): Promise<string> => {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    const textParts: string[] = [];
+
+    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+      const page = await pdf.getPage(pageNum);
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items
+        .filter((item: any) => 'str' in item)
+        .map((item: any) => item.str)
+        .join(' ');
+      textParts.push(pageText);
+    }
+
+    return textParts.join('\n\n').trim();
+  };
+
+  const extractTextFromDOCX = async (file: File): Promise<string> => {
+    const arrayBuffer = await file.arrayBuffer();
+    const result = await mammoth.extractRawText({ arrayBuffer });
+    return result.value.trim();
+  };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { FileText, Brain, CheckCircle, Loader2 } from "lucide-react";
+import { FileText, Brain, CheckCircle, Loader2, Upload, X } from "lucide-react";
+import { useDropzone } from "react-dropzone";
 
 export const ContractAnalysis = () => {
   const [contractText, setContractText] = useState("");
@@ -14,7 +15,93 @@ export const ContractAnalysis = () => {
   const [analysis, setAnalysis] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisType, setAnalysisType] = useState<'draft' | 'review' | 'grade'>('review');
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [isProcessingFile, setIsProcessingFile] = useState(false);
   const { toast } = useToast();
+
+  const onDrop = useCallback(async (acceptedFiles: File[]) => {
+    const file = acceptedFiles[0];
+    if (!file) return;
+
+    // Check file type
+    const allowedTypes = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'text/plain'
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+      toast({
+        title: "Unsupported File Type",
+        description: "Please upload a PDF, Word document, or text file.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUploadedFile(file);
+    setIsProcessingFile(true);
+
+    try {
+      // For text files, read directly
+      if (file.type === 'text/plain') {
+        const text = await file.text();
+        setContractText(text);
+      } else {
+        // For PDF/Word files, we'll need to extract text server-side
+        const fileExt = file.name.split('.').pop();
+        const fileName = `analysis-${Date.now()}.${fileExt}`;
+        const filePath = `temp-analysis/${fileName}`;
+
+        // Upload file temporarily
+        const { error: uploadError } = await supabase.storage
+          .from('training-contracts')
+          .upload(filePath, file);
+
+        if (uploadError) throw uploadError;
+
+        // Call edge function to extract text
+        const { data, error } = await supabase.functions.invoke('extract-text', {
+          body: { filePath }
+        });
+
+        if (error) throw error;
+
+        setContractText(data.extractedText);
+
+        // Clean up temporary file
+        await supabase.storage
+          .from('training-contracts')
+          .remove([filePath]);
+      }
+
+      toast({
+        title: "File Processed",
+        description: "Contract text extracted successfully.",
+      });
+    } catch (error) {
+      console.error('File processing error:', error);
+      toast({
+        title: "Processing Failed",
+        description: "Failed to extract text from file. Please try pasting the text directly.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessingFile(false);
+    }
+  }, [toast]);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      'application/pdf': ['.pdf'],
+      'application/msword': ['.doc'],
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+      'text/plain': ['.txt']
+    },
+    multiple: false
+  });
 
   const handleAnalyze = async () => {
     if (analysisType !== 'draft' && !contractText.trim()) {
@@ -115,30 +202,134 @@ export const ContractAnalysis = () => {
             </TabsContent>
 
             <TabsContent value="review" className="space-y-4">
-              <div>
-                <label className="text-sm font-medium mb-2 block">
-                  Contract Text
-                </label>
-                <Textarea
-                  placeholder="Paste the contract text you want to review..."
-                  value={contractText}
-                  onChange={(e) => setContractText(e.target.value)}
-                  rows={8}
-                />
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium mb-2 block">
+                    Upload Contract File
+                  </label>
+                  <div
+                    {...getRootProps()}
+                    className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
+                      isDragActive ? 'border-primary bg-primary/5' : 'border-muted-foreground/25 hover:border-primary/50'
+                    }`}
+                  >
+                    <input {...getInputProps()} />
+                    {isProcessingFile ? (
+                      <div className="flex items-center justify-center space-x-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span>Processing file...</span>
+                      </div>
+                    ) : uploadedFile ? (
+                      <div className="flex items-center justify-center space-x-2">
+                        <FileText className="h-4 w-4" />
+                        <span>{uploadedFile.name}</span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setUploadedFile(null);
+                            setContractText("");
+                          }}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <Upload className="h-8 w-8 mx-auto text-muted-foreground" />
+                        <p className="text-sm text-muted-foreground">
+                          {isDragActive ? "Drop the file here" : "Drag & drop a contract file here, or click to select"}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Supports PDF, Word, and text files
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="text-center text-sm text-muted-foreground">
+                  — or —
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium mb-2 block">
+                    Paste Contract Text
+                  </label>
+                  <Textarea
+                    placeholder="Paste the contract text you want to review..."
+                    value={contractText}
+                    onChange={(e) => setContractText(e.target.value)}
+                    rows={8}
+                  />
+                </div>
               </div>
             </TabsContent>
 
             <TabsContent value="grade" className="space-y-4">
-              <div>
-                <label className="text-sm font-medium mb-2 block">
-                  Contract Text
-                </label>
-                <Textarea
-                  placeholder="Paste the contract text you want to grade..."
-                  value={contractText}
-                  onChange={(e) => setContractText(e.target.value)}
-                  rows={8}
-                />
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium mb-2 block">
+                    Upload Contract File
+                  </label>
+                  <div
+                    {...getRootProps()}
+                    className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
+                      isDragActive ? 'border-primary bg-primary/5' : 'border-muted-foreground/25 hover:border-primary/50'
+                    }`}
+                  >
+                    <input {...getInputProps()} />
+                    {isProcessingFile ? (
+                      <div className="flex items-center justify-center space-x-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span>Processing file...</span>
+                      </div>
+                    ) : uploadedFile ? (
+                      <div className="flex items-center justify-center space-x-2">
+                        <FileText className="h-4 w-4" />
+                        <span>{uploadedFile.name}</span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setUploadedFile(null);
+                            setContractText("");
+                          }}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <Upload className="h-8 w-8 mx-auto text-muted-foreground" />
+                        <p className="text-sm text-muted-foreground">
+                          {isDragActive ? "Drop the file here" : "Drag & drop a contract file here, or click to select"}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Supports PDF, Word, and text files
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="text-center text-sm text-muted-foreground">
+                  — or —
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium mb-2 block">
+                    Paste Contract Text
+                  </label>
+                  <Textarea
+                    placeholder="Paste the contract text you want to grade..."
+                    value={contractText}
+                    onChange={(e) => setContractText(e.target.value)}
+                    rows={8}
+                  />
+                </div>
               </div>
             </TabsContent>
           </Tabs>

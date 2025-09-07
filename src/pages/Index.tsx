@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { TrainingContractUpload } from "@/components/TrainingContractUpload";
+import { ContractAnalysis } from "@/components/ContractAnalysis";
 import { useUserRole } from "@/hooks/useUserRole";
 
 const Index = () => {
@@ -204,6 +205,10 @@ const Index = () => {
               <Button className="w-full mt-4">Subscribe</Button>
             </CardContent>
           </Card>
+        </div>
+
+        <div className="mt-8">
+          <ContractAnalysis />
         </div>
       </div>
     </div>

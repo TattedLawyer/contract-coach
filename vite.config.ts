@@ -16,4 +16,7 @@ export default defineConfig(({ mode }) => ({
     },
     dedupe: ["react", "react-dom"],
   },
+  build: {
+    target: "es2022", // Support top-level await for PDF.js
+  },
 }));

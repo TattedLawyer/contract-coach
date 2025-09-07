@@ -48,18 +48,6 @@ export const ContractAnalysis = () => {
       if (file.type === 'text/plain') {
         const text = await file.text();
         setContractText(text);
-        
-        // Automatically trigger analysis if we're in review or grade mode and got text
-        if ((analysisType === 'review' || analysisType === 'grade') && text.trim()) {
-          setTimeout(() => {
-            handleAnalyze();
-          }, 500);
-        }
-        
-        toast({
-          title: "File Processed",
-          description: "Text file loaded successfully.",
-        });
       } else {
         // For PDF/Word files, we'll need to extract text server-side
         const fileExt = file.name.split('.').pop();
@@ -86,21 +74,12 @@ export const ContractAnalysis = () => {
         await supabase.storage
           .from('training-contracts')
           .remove([filePath]);
+      }
 
-        // Automatically trigger analysis if we're in review or grade mode and got text
-        if ((analysisType === 'review' || analysisType === 'grade') && data.extractedText && !data.extractedText.includes('requires additional setup')) {
-          // Trigger analysis automatically
-          setTimeout(() => {
-            handleAnalyze();
-          }, 500);
-        }
-
-        toast({
-          title: "File Processed",
-          description: data.extractedText.includes('requires additional setup') 
-            ? "File uploaded, but text extraction needs manual input"
-            : "Contract text extracted successfully.",
-        });
+      toast({
+        title: "File Processed",
+        description: "Contract text extracted successfully.",
+      });
     } catch (error) {
       console.error('File processing error:', error);
       toast({
@@ -111,7 +90,7 @@ export const ContractAnalysis = () => {
     } finally {
       setIsProcessingFile(false);
     }
-  }, [toast, analysisType, handleAnalyze]);
+  }, [toast]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,

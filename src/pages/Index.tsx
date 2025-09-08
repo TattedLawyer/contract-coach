@@ -8,7 +8,7 @@ import { useState } from "react";
 import { TrainingContractUpload } from "@/components/TrainingContractUpload";
 import { ContractAnalysis } from "@/components/ContractAnalysis";
 import { useUserRole } from "@/hooks/useUserRole";
-import { FileText, Upload, Shield, FileCheck, Star, Calendar, Play } from "lucide-react";
+import { FileText, Upload, Shield, FileCheck, Star, Calendar, Play, Settings } from "lucide-react";
 
 const Index = () => {
   const { user, signOut, loading } = useAuth();
@@ -293,6 +293,12 @@ const Index = () => {
                 {assigningAdmin ? 'Assigning...' : 'Assign Admin Role'}
               </Button>
             )}
+            <Link to="/settings">
+              <Button variant="ghost">
+                <Settings className="h-4 w-4 mr-2" />
+                Settings
+              </Button>
+            </Link>
             <Button onClick={signOut} variant="outline">
               Sign Out
             </Button>

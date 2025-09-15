@@ -20,7 +20,7 @@ const Index = () => {
     setAssigningAdmin(true);
     try {
       const { data, error } = await supabase.functions.invoke('assign-admin');
-      
+
       if (error) {
         toast({
           title: "Error",
@@ -61,7 +61,7 @@ const Index = () => {
         <nav className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="container mx-auto px-6 py-4">
             <div className="flex items-center justify-between">
-              <div className="text-2xl font-bold text-foreground">EasyContract</div>
+              <div className="text-2xl font-bold text-foreground">Contract Coach</div>
               <div className="flex items-center gap-4">
                 <Link to="/auth">
                   <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
@@ -78,193 +78,262 @@ const Index = () => {
           </div>
         </nav>
 
-        {/* Client logos banner */}
-        <div className="border-b border-border/40 bg-muted/30">
-          <div className="container mx-auto px-6 py-6">
-            <div className="flex items-center justify-center gap-8 opacity-60">
-              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                Trusted by 500+ companies
+        {/* Trust indicators */}
+        <div className="border-b border-border/40 bg-background/50">
+          <div className="container mx-auto px-6 py-4">
+            <div className="flex items-center justify-center gap-8 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <Shield className="h-4 w-4" />
+                Enterprise-grade security
               </div>
               <div className="w-px h-4 bg-border"></div>
-              <div className="flex items-center gap-8">
-                {[
-                  "Microsoft", "Acer", "Bosch", "Grant Thornton"
-                ].map((company) => (
-                  <div key={company} className="text-sm font-medium text-muted-foreground/80">
-                    {company}
-                  </div>
-                ))}
-              </div>
+              <div>GDPR compliant</div>
+              <div className="w-px h-4 bg-border"></div>
+              <div>24/7 support</div>
             </div>
           </div>
         </div>
 
-        {/* Hero Section */}
+        {/* Hero Section - Contract Drafting/Analysis */}
         <div className="container mx-auto px-6 pt-20 pb-32">
           <div className="text-center space-y-8 max-w-4xl mx-auto">
-            {/* Video placeholder */}
-            <div className="relative max-w-3xl mx-auto mb-12">
-              <div className="aspect-video bg-gradient-to-br from-muted to-muted/60 rounded-xl border border-border/40 flex items-center justify-center group cursor-pointer hover:from-muted/80 hover:to-muted/40 transition-all duration-300">
-                <div className="flex items-center gap-3 text-muted-foreground group-hover:text-foreground transition-colors">
-                  <div className="p-4 rounded-full bg-primary/10 border border-primary/20">
-                    <Play className="h-8 w-8 text-primary" />
-                  </div>
-                  <div className="text-left">
-                    <div className="font-medium">See EasyContract in action</div>
-                    <div className="text-sm text-muted-foreground">1:25 demo</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
             <div className="space-y-6">
               <h1 className="text-5xl lg:text-7xl font-bold leading-tight tracking-tight">
-                <span className="block text-foreground">Unblock legal to</span>
+                <span className="block text-foreground">Draft & Analyze</span>
                 <span className="block bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent">
-                  unlock growth
+                  Contracts Smarter
                 </span>
               </h1>
-              
+
               <p className="text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-                Contract smarter, scale faster. Streamline legal review and analysis to reduce friction and fuel operational efficiency.
+                Professional contract drafting and AI-powered analysis. Choose your path below.
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
-              <Link to="/auth">
-                <Button size="lg" className="text-lg px-8 py-6 bg-primary hover:bg-primary/90 text-primary-foreground">
-                  Start Analyzing Contracts
-                </Button>
+            {/* Contract Options */}
+            <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto mt-12">
+              <Link to="/auth" className="block">
+                <Card className="h-full hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/50 cursor-pointer group">
+                  <CardContent className="p-8 text-center space-y-4">
+                    <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto group-hover:bg-primary/20 transition-colors">
+                      <FileText className="h-8 w-8 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold mb-2">Draft Contract</h3>
+                      <p className="text-muted-foreground mb-4">
+                        Create professional contracts with our guided wizard. Choose from service agreements, NDAs, employment contracts, and more.
+                      </p>
+                      <Button size="lg" className="w-full">
+                        Start Drafting
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
               </Link>
-              <Button size="lg" variant="outline" className="text-lg px-8 py-6">
-                Book a Demo
-              </Button>
+
+              <Link to="/auth" className="block">
+                <Card className="h-full hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/50 cursor-pointer group">
+                  <CardContent className="p-8 text-center space-y-4">
+                    <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto group-hover:bg-primary/20 transition-colors">
+                      <Shield className="h-8 w-8 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold mb-2">Analyze Contract</h3>
+                      <p className="text-muted-foreground mb-4">
+                        Upload existing contracts for AI-powered analysis, risk detection, and compliance review.
+                      </p>
+                      <Button size="lg" variant="outline" className="w-full">
+                        Start Analyzing
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
             </div>
-            
-            <p className="text-sm text-muted-foreground">
-              No setup required • Instant analysis • Enterprise-grade security
+
+            <p className="text-sm text-muted-foreground pt-4">
+              Free trial available • No credit card required • Enterprise-grade security
             </p>
           </div>
         </div>
 
-        {/* Key Benefits */}
-        <div className="bg-muted/30 py-20">
+        {/* Features Section - Industry-Leading Contract Tools */}
+        <div className="py-20">
           <div className="container mx-auto px-6">
-            <div className="grid lg:grid-cols-3 gap-12">
-              <div className="text-center lg:text-left space-y-4">
-                <h2 className="text-3xl lg:text-4xl font-bold text-foreground">
-                  Contract smarter, scale faster
-                </h2>
-                <p className="text-lg text-muted-foreground">
-                  Streamline legal review and drafting to reduce friction and fuel operational efficiency.
-                </p>
+            <div className="text-center mb-16">
+              <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
+                Industry-Leading Contract Intelligence
+              </h2>
+              <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+                Everything you need for professional contract management, included in every plan.
+              </p>
+            </div>
+
+            <div className="grid lg:grid-cols-2 gap-12 items-center mb-20">
+              {/* Feature Cards */}
+              <div className="space-y-8">
+                <div className="flex gap-4">
+                  <div className="p-3 rounded-lg bg-primary/10 border border-primary/20 flex-shrink-0">
+                    <Shield className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg mb-2">Risk Detection & Compliance</h3>
+                    <p className="text-muted-foreground">
+                      Automatically identify potential legal risks, compliance issues, and unfavorable terms with AI-powered analysis.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4">
+                  <div className="p-3 rounded-lg bg-primary/10 border border-primary/20 flex-shrink-0">
+                    <FileCheck className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg mb-2">Instant Analysis</h3>
+                    <p className="text-muted-foreground">
+                      Get comprehensive contract analysis in seconds, not hours. Extract key terms, obligations, and deadlines automatically.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4">
+                  <div className="p-3 rounded-lg bg-primary/10 border border-primary/20 flex-shrink-0">
+                    <Star className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg mb-2">Professional Drafting</h3>
+                    <p className="text-muted-foreground">
+                      Create legally sound contracts with our guided wizard. Choose from service agreements, NDAs, employment contracts, and more.
+                    </p>
+                  </div>
+                </div>
               </div>
-              
-              <div className="text-center lg:text-left space-y-4">
-                <h2 className="text-3xl lg:text-4xl font-bold text-foreground">
-                  Fast-track compliance, reduce risk
-                </h2>
-                <p className="text-lg text-muted-foreground">
-                  Spot red flags instantly and stay audit-ready to cut the risk of disputes and penalties.
-                </p>
-              </div>
-              
-              <div className="text-center lg:text-left space-y-4">
-                <h2 className="text-3xl lg:text-4xl font-bold text-foreground">
-                  Procure with precision and speed
-                </h2>
-                <p className="text-lg text-muted-foreground">
-                  Automate legal checks and approvals to half vendor onboarding time without sacrificing oversight.
-                </p>
-              </div>
+
+              {/* Demo Card */}
+              <Card className="bg-card/50 backdrop-blur border-border/60">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <FileText className="h-5 w-5 text-primary" />
+                    Try Contract Analysis
+                  </CardTitle>
+                  <CardDescription>
+                    Upload your contract and see instant insights
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="border-2 border-dashed border-border/60 rounded-lg p-8 text-center space-y-3 hover:border-primary/40 transition-colors">
+                    <Upload className="h-10 w-10 text-primary mx-auto" />
+                    <div>
+                      <p className="font-medium">Drop your contract here</p>
+                      <p className="text-sm text-muted-foreground">
+                        or click to browse files
+                      </p>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Supports PDF, DOC, DOCX • Max 25MB
+                    </p>
+                  </div>
+                  <Link to="/auth" className="block">
+                    <Button className="w-full" size="lg">
+                      Start Free Trial
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>
 
-        {/* Contract Analysis CTA */}
-        <div className="py-20">
+        {/* FAQ Section */}
+        <div className="bg-muted/30 py-20">
           <div className="container mx-auto px-6">
             <div className="max-w-4xl mx-auto">
-              <div className="text-center space-y-8 mb-12">
-                <h2 className="text-4xl lg:text-5xl font-bold">
-                  Purpose-built AI to execute
-                  <span className="block text-primary">contract analysis</span>
+              <div className="text-center mb-16">
+                <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
+                  Frequently Asked Questions
                 </h2>
                 <p className="text-xl text-muted-foreground">
-                  Review, analyze and extract insights from legal documents in minutes.
+                  Everything you need to know about contract drafting and analysis.
                 </p>
               </div>
 
-              <div className="grid lg:grid-cols-2 gap-12 items-center">
-                {/* Contract upload demo */}
-                <Card className="bg-card/50 backdrop-blur border-border/60">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <FileText className="h-5 w-5 text-primary" />
-                      Contract Analysis
-                    </CardTitle>
-                    <CardDescription>
-                      Upload your contract and get instant insights
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="border-2 border-dashed border-border/60 rounded-lg p-8 text-center space-y-3 hover:border-primary/40 transition-colors">
-                      <Upload className="h-10 w-10 text-primary mx-auto" />
-                      <div>
-                        <p className="font-medium">Drop your contract here</p>
-                        <p className="text-sm text-muted-foreground">
-                          or click to browse files
-                        </p>
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        Supports PDF, DOC, DOCX • Max 10MB
-                      </p>
-                    </div>
-                    <Link to="/auth" className="block">
-                      <Button className="w-full" size="lg">
-                        Get started free
-                      </Button>
-                    </Link>
+              <div className="space-y-6">
+                <Card>
+                  <CardContent className="p-6">
+                    <h3 className="text-lg font-semibold mb-3">How do I get started with contract drafting?</h3>
+                    <p className="text-muted-foreground">
+                      Simply sign up for a free trial, choose "Draft Contract" from the main dashboard, and follow our guided wizard.
+                      Select your contract type, answer a few questions about the parties and terms, and we'll generate a professional contract for you.
+                    </p>
                   </CardContent>
                 </Card>
 
-                {/* Features */}
-                <div className="space-y-8">
-                  <div className="flex gap-4">
-                    <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
-                      <Shield className="h-6 w-6 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-lg">Risk Detection</h3>
-                      <p className="text-muted-foreground">
-                        Automatically identify potential legal risks and compliance issues
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex gap-4">
-                    <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
-                      <FileCheck className="h-6 w-6 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-lg">Instant Analysis</h3>
-                      <p className="text-muted-foreground">
-                        Get comprehensive contract analysis in seconds, not hours
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex gap-4">
-                    <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
-                      <Star className="h-6 w-6 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-lg">Key Insights</h3>
-                      <p className="text-muted-foreground">
-                        Extract important terms, obligations, and deadlines automatically
-                      </p>
-                    </div>
-                  </div>
+                <Card>
+                  <CardContent className="p-6">
+                    <h3 className="text-lg font-semibold mb-3">What types of contracts can you help me create?</h3>
+                    <p className="text-muted-foreground">
+                      We support service agreements, independent contractor agreements, consulting agreements, employment contracts,
+                      partnership agreements, license agreements, and non-disclosure agreements. For other contract types, you can use our custom drafting option.
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-6">
+                    <h3 className="text-lg font-semibold mb-3">How does contract analysis work?</h3>
+                    <p className="text-muted-foreground">
+                      Upload your existing contract (PDF, DOC, or DOCX format up to 25MB), and our AI will analyze it for risks, compliance issues,
+                      key terms, and provide a detailed grade and improvement suggestions. Analysis typically takes just a few seconds.
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-6">
+                    <h3 className="text-lg font-semibold mb-3">Is my data secure?</h3>
+                    <p className="text-muted-foreground">
+                      Yes, we use enterprise-grade security with end-to-end encryption. Your contracts are processed securely and
+                      never stored permanently. We comply with GDPR and other privacy regulations.
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-6">
+                    <h3 className="text-lg font-semibold mb-3">Can I download and edit the contracts I create?</h3>
+                    <p className="text-muted-foreground">
+                      Absolutely! All drafted contracts can be downloaded as PDF or DOCX files. You can then edit them in your preferred word processor
+                      or share them with other parties as needed.
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-6">
+                    <h3 className="text-lg font-semibold mb-3">Do you provide legal advice?</h3>
+                    <p className="text-muted-foreground">
+                      No, we are not a law firm and do not provide legal advice. Our AI helps draft and analyze contracts based on standard legal templates,
+                      but you should always have contracts reviewed by qualified legal professionals before signing.
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* CTA Section */}
+              <div className="text-center mt-16">
+                <h3 className="text-2xl font-bold mb-4">Ready to get started?</h3>
+                <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
+                  Join thousands of professionals who trust Contract Coach for their legal document needs.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Link to="/auth">
+                    <Button size="lg" className="px-8 py-3">
+                      Start Free Trial
+                    </Button>
+                  </Link>
+                  <Button size="lg" variant="outline" className="px-8 py-3">
+                    Schedule Demo
+                  </Button>
                 </div>
               </div>
             </div>
@@ -285,8 +354,8 @@ const Index = () => {
           </div>
           <div className="flex gap-2">
             {user.email === 'tatted@mnnt.io' && (
-              <Button 
-                onClick={handleAssignAdmin} 
+              <Button
+                onClick={handleAssignAdmin}
                 disabled={assigningAdmin}
                 variant="secondary"
               >

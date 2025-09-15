@@ -40,7 +40,7 @@ serve(async (req) => {
     }
 
     // Build context from training contracts
-    const trainingContext = trainingContracts?.map(contract => 
+    const trainingContext = trainingContracts?.map(contract =>
       `Contract: ${contract.file_name}\nType: ${contract.contract_type || 'Unknown'}\nDescription: ${contract.description || 'No description'}`
     ).join('\n\n') || '';
 
@@ -66,49 +66,111 @@ Format your response as a complete contract document with proper structure and l
         userPrompt = prompt || contractText;
         break;
 
-      case 'review':
-        systemPrompt = `You are an expert contract attorney specializing in contract review and analysis. You have access to a database of training contracts that inform your understanding of industry standards and best practices.
+      case 'analyze':
+        // UNIFIED ANALYSIS: Both review and grade in one comprehensive response
+        systemPrompt = `You are an expert contract attorney and legal educator. You have access to a database of training contracts that inform your understanding of industry standards and best practices.
 
 Training Contracts Context:
 ${trainingContext}
 
-Analyze the provided contract thoroughly and provide:
-1. **Summary**: Brief overview of the contract's purpose and key terms
-2. **Strengths**: Well-drafted clauses and provisions
-3. **Weaknesses**: Areas of concern, ambiguous language, or missing provisions
-4. **Risks**: Potential legal and business risks
-5. **Recommendations**: Specific suggestions for improvement
-6. **Compliance**: Any regulatory or industry standard considerations
-
-Be thorough but concise in your analysis.`;
-        userPrompt = `Please review and analyze the following contract:\n\n${contractText}`;
-        break;
-
-      case 'grade':
-        systemPrompt = `You are an expert contract attorney and legal educator. You have access to a database of training contracts that represent industry standards and best practices.
-
-Training Contracts Context:
-${trainingContext}
-
-Grade the provided contract on a scale of A-F based on:
+**GRADE THE CONTRACT** on a scale of A-F based on:
 - Legal accuracy and completeness (40%)
 - Clarity and precision of language (25%)
 - Risk management and protection (20%)
 - Industry best practices compliance (15%)
 
-Provide:
-1. **Overall Grade**: Letter grade with brief justification
-2. **Detailed Breakdown**: Score and comments for each category
-3. **Specific Issues**: Line-by-line feedback on problematic sections
-4. **Improvement Suggestions**: Concrete recommendations to achieve a higher grade
-5. **Comparison**: How this contract compares to industry standards based on your training data
+**PROVIDE COMPREHENSIVE ANALYSIS** in a well-formatted, professional report including:
+1. **Overall Grade**: Letter grade (A-F) with percentage score and brief justification
+2. **Detailed Breakdown**: Score and comments for each category above
+3. **Summary**: Brief overview of the contract's purpose and key terms
+4. **Strengths**: Well-drafted clauses and provisions
+5. **Weaknesses**: Areas of concern, ambiguous language, or missing provisions
+6. **Risks**: Potential legal and business risks
+7. **Recommendations**: Specific suggestions for improvement
+8. **Compliance**: Any regulatory or industry standard considerations
+9. **Comparison**: How this contract compares to industry standards
 
-Be constructive but honest in your assessment.`;
-        userPrompt = `Please grade and provide detailed feedback on the following contract:\n\n${contractText}`;
+**THEN PROVIDE UPGRADE SUGGESTIONS** in a structured format. Structure your ENTIRE response as clean, formatted text (NOT JSON). Use markdown formatting for readability:
+
+# 📊 Contract Analysis Report
+
+## 🎯 Overall Grade: [GRADE] ([SCORE]%)
+
+## 📋 Detailed Breakdown
+- **Legal Accuracy and Completeness (40%)**: [Score/40] - [Comments]
+- **Clarity and Precision of Language (25%)**: [Score/25] - [Comments]
+- **Risk Management and Protection (20%)**: [Score/20] - [Comments]
+- **Industry Best Practices Compliance (15%)**: [Score/15] - [Comments]
+
+## 📝 Summary
+[Brief overview of contract purpose and key terms]
+
+## ✅ Strengths
+- [Strength 1]
+- [Strength 2]
+- [etc.]
+
+## ⚠️ Weaknesses
+- [Weakness 1]
+- [Weakness 2]
+- [etc.]
+
+## 🚨 Risks
+- [Risk 1]
+- [Risk 2]
+- [etc.]
+
+## 💡 Recommendations
+- [Recommendation 1]
+- [Recommendation 2]
+- [etc.]
+
+## ⚖️ Compliance
+[Compliance analysis]
+
+## 🔍 Industry Comparison
+[Comparison to industry standards]
+
+---
+
+# 🚀 Contract Upgrade Suggestions
+
+## 🏆 High Priority Improvements
+### Missing Clauses
+- [Suggestion 1]
+- [Suggestion 2]
+- [etc.]
+
+### Legal Language Enhancements
+- [Suggestion 1]
+- [Suggestion 2]
+- [etc.]
+
+## 📈 Medium Priority Improvements
+### Risk Mitigation
+- [Suggestion 1]
+- [Suggestion 2]
+- [etc.]
+
+### Compliance Updates
+- [Suggestion 1]
+- [Suggestion 2]
+- [etc.]
+
+## 📝 Low Priority Improvements
+### Clarity Improvements
+- [Suggestion 1]
+- [Suggestion 2]
+- [etc.]
+
+---
+
+**IMPORTANT:** Format your response as clean, readable text with markdown formatting. Do NOT return JSON. Make it professional and easy to read.`;
+        userPrompt = `Please analyze the following contract comprehensively and provide a detailed report with upgrade suggestions:\n\n${contractText}`;
         break;
 
       default:
-        throw new Error('Invalid analysis type. Must be: draft, review, or grade');
+        throw new Error('Invalid analysis type. Must be: draft or analyze');
     }
 
     // Call Gemini API
@@ -150,7 +212,7 @@ Be constructive but honest in your assessment.`;
 
     const analysis = geminiData.candidates[0].content.parts[0].text;
 
-    return new Response(JSON.stringify({ 
+    return new Response(JSON.stringify({
       analysis,
       analysisType,
       timestamp: new Date().toISOString()
@@ -160,9 +222,9 @@ Be constructive but honest in your assessment.`;
 
   } catch (error) {
     console.error('Error in analyze-contract function:', error);
-    return new Response(JSON.stringify({ 
+    return new Response(JSON.stringify({
       error: error.message,
-      details: error.stack 
+      details: error.stack
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

@@ -11,6 +11,124 @@ const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
 const supabaseUrl = Deno.env.get('SUPABASE_URL');
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
+/**
+ * Clean upgraded contract text to remove unwanted introduction and metadata
+ */
+function cleanUpgradedContract(text: string): string {
+    let cleaned = text;
+
+    // Remove common unwanted introduction text patterns (comprehensive list)
+    const unwantedPatterns = [
+        // Main problematic patterns from user feedback
+        /Here is the upgraded contract incorporating the requested changes\./gi,
+        /The additions are clearly marked\./gi,
+        /Changes are clearly marked with comments indicating the additions\./gi,
+        /Here is your upgraded contract:/gi,
+        /Below is the revised contract:/gi,
+        /I've created the following contract for you:/gi,
+        /Here's the contract draft:/gi,
+        /The upgraded contract is as follows:/gi,
+        /Here is the complete upgraded contract:/gi,
+        /Here's the upgraded version:/gi,
+
+        // Additional AI response patterns
+        /Here is the contract:/gi,
+        /The contract is as follows:/gi,
+        /Below is the contract:/gi,
+        /Here's your contract:/gi,
+        /I have created the following contract:/gi,
+        /The revised contract is:/gi,
+        /Here is the revised version:/gi,
+
+        // Markdown and formatting artifacts
+        /\*\*Changes are marked with \[.*?\]\*\*/gi,
+        /---[\s\S]*?---/g, // Remove markdown separators
+        /```[\s\S]*?```/g, // Remove code blocks
+        /`[\s\S]*?`/g, // Remove inline code
+        /\[.*?\]/g, // Remove bracketed comments
+        /^\s*\[.*?\]\s*$/gm, // Remove lines that are just bracketed comments
+
+        // Specific problematic patterns from PDF output
+        /```text\s+UPGRADED\s+CONTRACT/gi,
+        /```UPGRADED\s+CONTRACT/gi,
+        /```text/gi, // Remove any ```text patterns
+        /UPGRADED\s+CONTRACT[\s\S]*?```/gi, // Remove content after UPGRADED CONTRACT in code blocks
+        /^```[\s\S]*?UPGRADED\s+CONTRACT[\s\S]*?$/gm, // Remove entire lines with this pattern
+        /```[\s\S]*?UPGRADED[\s\S]*?```/gi, // Remove code blocks containing UPGRADED
+
+        // Additional contract-related code block patterns
+        /```[\s\S]*?CONTRACT[\s\S]*?```/gi, // Any code block containing CONTRACT
+        /```[\s\S]*?AGREEMENT[\s\S]*?```/gi, // Any code block containing AGREEMENT
+        /```[\s\S]*?REVISED[\s\S]*?```/gi, // Any code block containing REVISED
+        /^```\w*\s*$/gm, // Remove lines that are just opening code blocks
+        /^```\w+.*$/gm, // Remove lines that start with code blocks and have content
+
+        // Headers that should be removed
+        /^#+\s*(Contract|Agreement|Draft|Upgrade|Revised|Updated)/gim,
+
+        // Common AI fluff
+        /^Here is/gim,
+        /^Below is/gim,
+        /^The following/gim,
+        /^I've prepared/gim,
+        /^This is the/gim,
+        /^As requested/gim,
+        /^The upgraded contract:/gim,
+        /^Upgraded Contract:/gim,
+        /^Revised Contract:/gim,
+        /^New Contract Version:/gim,
+    ];
+
+    // Apply all cleaning patterns
+    unwantedPatterns.forEach(pattern => {
+        cleaned = cleaned.replace(pattern, '');
+    });
+
+    // Remove excessive whitespace and empty lines at the beginning
+    cleaned = cleaned.replace(/^\s*\n+/gm, '');
+    cleaned = cleaned.replace(/\n\s*\n\s*\n/g, '\n\n'); // Remove excessive consecutive empty lines
+    cleaned = cleaned.trim();
+
+    // More aggressive cleaning: if text starts with common unwanted phrases, find contract start
+    const aggressiveStartPatterns = [
+        // Contract start patterns
+        /^This Agreement/im,
+        /^This Contract/im,
+        /^WHEREAS/im,
+        /^BETWEEN/im,
+        /^PARTIES:/im,
+        /^AGREEMENT/im,
+        /^CONTRACT/im,
+        /^The Parties:/im,
+        /^1\./im, // Numbered clauses
+        /^I\./im, // Roman numerals
+        /^A\./im, // Lettered clauses
+        /^Section\s+\d+/im,
+        /^Article\s+\d+/im,
+
+        // Header patterns that indicate actual contract content
+        /^#+\s*(Parties|Definitions|Term|Payment|Signatures?|Scope|Obligations)/im,
+    ];
+
+    for (const pattern of aggressiveStartPatterns) {
+        const match = cleaned.match(pattern);
+        if (match && match.index > 0) {
+            // Only cut if we're removing a significant amount of unwanted text
+            if (match.index > 10) {
+                cleaned = cleaned.substring(match.index);
+                break;
+            }
+        }
+    }
+
+    // Final cleanup
+    cleaned = cleaned.replace(/^\s*\n+/gm, ''); // Remove leading empty lines
+    cleaned = cleaned.replace(/\n\s*\n\s*\n/g, '\n\n'); // Normalize multiple empty lines
+    cleaned = cleaned.trim();
+
+    return cleaned;
+}
+
 serve(async (req) => {
     // Handle CORS preflight requests
     if (req.method === 'OPTIONS') {
@@ -142,7 +260,10 @@ Please upgrade the contract by implementing these suggestions. Return the comple
             throw new Error('No upgrade generated from Gemini');
         }
 
-        const upgradedContract = geminiData.candidates[0].content.parts[0].text;
+        let upgradedContract = geminiData.candidates[0].content.parts[0].text;
+
+        // Clean the upgraded contract to remove unwanted introduction text
+        upgradedContract = cleanUpgradedContract(upgradedContract);
 
         // Create a summary of changes made
         const changesSummary = selectedSuggestions.map((suggestion: any, index: number) =>

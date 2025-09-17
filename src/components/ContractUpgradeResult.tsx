@@ -4,12 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Textarea } from "@/components/ui/textarea";
 import { FileText, Download, Copy, CheckCircle, ArrowLeft, RotateCcw } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { downloadAsPDF, downloadAsDocx, getDownloadFilename } from "@/lib/downloadUtils";
 import { diffWords } from "diff";
+import { AnalysisText } from "./AnalysisText";
 
 interface ContractUpgradeResultProps {
     originalContract: string;
@@ -232,7 +232,10 @@ export const ContractUpgradeResult = ({
 
                         <TabsContent value="upgraded" className="space-y-4">
                             <div className="flex justify-between items-center">
-                                <h3 className="text-lg font-semibold">Your Upgraded Contract</h3>
+                                <div>
+                                    <h3 className="text-xl font-bold mb-2">Your Upgraded Contract</h3>
+                                    <p className="text-muted-foreground">Revision {revisionNumber} with professional formatting</p>
+                                </div>
                                 <div className="flex gap-2">
                                     <Button
                                         onClick={() => copyToClipboard(upgradedContract, 'Upgraded contract')}
@@ -252,17 +255,21 @@ export const ContractUpgradeResult = ({
                                     </Button>
                                 </div>
                             </div>
-                            <Textarea
-                                value={upgradedContract}
-                                readOnly
-                                className="min-h-[500px] font-mono text-sm"
-                                placeholder="Your upgraded contract will appear here..."
-                            />
+                            <Card className="border-2 border-green-200 bg-green-50/30">
+                                <CardContent className="p-6">
+                                    <div className="prose prose-lg max-w-none">
+                                        <AnalysisText content={upgradedContract} />
+                                    </div>
+                                </CardContent>
+                            </Card>
                         </TabsContent>
 
                         <TabsContent value="original" className="space-y-4">
                             <div className="flex justify-between items-center">
-                                <h3 className="text-lg font-semibold">Original Contract</h3>
+                                <div>
+                                    <h3 className="text-xl font-bold mb-2">Original Contract</h3>
+                                    <p className="text-muted-foreground">The contract before improvements</p>
+                                </div>
                                 <Button
                                     onClick={() => copyToClipboard(originalContract, 'Original contract')}
                                     variant="outline"
@@ -272,37 +279,57 @@ export const ContractUpgradeResult = ({
                                     Copy
                                 </Button>
                             </div>
-                            <Textarea
-                                value={originalContract}
-                                readOnly
-                                className="min-h-[500px] font-mono text-sm opacity-75"
-                                placeholder="Your original contract..."
-                            />
+                            <Card className="border-2 border-gray-200 bg-gray-50/30">
+                                <CardContent className="p-6">
+                                    <div className="prose max-w-none opacity-80">
+                                        <AnalysisText content={originalContract} />
+                                    </div>
+                                </CardContent>
+                            </Card>
                         </TabsContent>
 
                         <TabsContent value="comparison" className="space-y-4">
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                <div className="space-y-2">
-                                    <h3 className="text-lg font-semibold text-gray-600">Original Contract</h3>
-                                    <div className="border rounded-md p-4 min-h-[400px] font-mono text-sm bg-gray-50 overflow-auto">
-                                        <pre className="whitespace-pre-wrap">{originalContract}</pre>
-                                    </div>
+                            <div className="space-y-4">
+                                <div className="text-center">
+                                    <h3 className="text-2xl font-bold mb-2">Contract Comparison</h3>
+                                    <p className="text-muted-foreground">See exactly what changed with highlighted improvements</p>
                                 </div>
-                                <div className="space-y-2">
-                                    <h3 className="text-lg font-semibold text-green-600">Upgraded Contract (with highlights)</h3>
-                                    <div className="border rounded-md p-4 min-h-[400px] font-mono text-sm bg-white overflow-auto">
-                                        <div className="whitespace-pre-wrap">
-                                            {renderHighlightedDiff(originalContract, upgradedContract)}
+
+                                <div className="grid grid-cols-1 gap-6">
+                                    <div className="space-y-4">
+                                        <div className="bg-gradient-to-r from-green-50 to-green-100 border-2 border-green-200 rounded-lg p-6">
+                                            <h4 className="text-lg font-semibold text-green-800 mb-4 flex items-center gap-2">
+                                                <CheckCircle className="h-5 w-5" />
+                                                Your Improved Contract
+                                            </h4>
+                                            <div className="prose prose-lg max-w-none">
+                                                <AnalysisText content={upgradedContract} />
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="text-sm text-gray-600 space-y-1">
-                                        <div className="flex items-center gap-2">
-                                            <span className="inline-block w-4 h-4 bg-green-200 rounded"></span>
-                                            <span>New additions/improvements</span>
+
+                                        <div className="bg-gray-50 border-2 border-gray-200 rounded-lg p-6">
+                                            <h4 className="text-lg font-semibold text-gray-700 mb-4">Original Contract</h4>
+                                            <div className="prose max-w-none opacity-75">
+                                                <AnalysisText content={originalContract} />
+                                            </div>
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                            <span className="inline-block w-4 h-4 bg-red-200 rounded line-through"></span>
-                                            <span>Removed content (if any)</span>
+
+                                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                            <h5 className="font-semibold text-blue-800 mb-3">Change Legend</h5>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-6 h-6 bg-green-200 rounded-full flex items-center justify-center">
+                                                        <span className="text-green-800 font-bold text-xs">+</span>
+                                                    </div>
+                                                    <span className="text-blue-700">New additions and improvements</span>
+                                                </div>
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-6 h-6 bg-red-200 rounded-full flex items-center justify-center">
+                                                        <span className="text-red-800 font-bold text-xs">−</span>
+                                                    </div>
+                                                    <span className="text-blue-700">Removed or modified content</span>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{contract_title}}</title>
+    <link rel="stylesheet" href="./contract-style.css">
+    <style>
+        /* Embedded styles for Puppeteer compatibility */
+        body {
+            font-family: 'Calibri', 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
+            font-size: 12px;
+            line-height: 1.5;
+            color: #000000;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .contract-header {
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .contract-logo {
+            height: 60px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        .contract-title-section h1 {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 0 0 5px 0;
+            color: #000000;
+        }
+
+        .contract-subtitle {
+            font-size: 14px;
+            color: #6b7280;
+            margin: 0;
+        }
+
+        .contract-meta {
+            margin-left: auto;
+            text-align: right;
+            font-size: 10px;
+            color: #6b7280;
+        }
+
+        .contract-meta p {
+            margin: 0 0 3px 0;
+        }
+
+        .contract-content {
+            margin-bottom: 40px;
+        }
+
+        .contract-content h1,
+        .contract-content h2,
+        .contract-content h3,
+        .contract-content h4,
+        .contract-content h5,
+        .contract-content h6 {
+            font-family: 'Calibri', 'Segoe UI', sans-serif;
+            color: #000000;
+            margin-top: 24px;
+            margin-bottom: 12px;
+            page-break-after: avoid;
+        }
+
+        .contract-content h1 {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .contract-content h2 {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .contract-content h3 {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .contract-content h4 {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .contract-content h5 {
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .contract-content h6 {
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .contract-content p {
+            margin: 12px 0;
+            text-align: justify;
+            line-height: 1.6;
+            orphans: 3;
+            widows: 3;
+        }
+
+        .contract-content ul,
+        .contract-content ol {
+            margin: 12px 0;
+            padding-left: 24px;
+        }
+
+        .contract-content li {
+            margin: 6px 0;
+            line-height: 1.5;
+        }
+
+        .contract-content .strong,
+        .contract-content strong {
+            font-weight: 600;
+            color: #000000;
+        }
+
+        .contract-content .emphasis,
+        .contract-content em {
+            font-style: italic;
+            color: #374151;
+        }
+
+        .contract-content .code {
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+            background-color: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+
+        .contract-content .quote {
+            border-left: 4px solid #e5e7eb;
+            padding-left: 16px;
+            margin: 16px 0;
+            font-style: italic;
+            color: #6b7280;
+            background-color: #f9fafb;
+            padding: 12px 16px;
+        }
+
+        .contract-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 11px;
+        }
+
+        .contract-content th,
+        .contract-content td {
+            border: 1px solid #e5e7eb;
+            padding: 8px 12px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .contract-content th {
+            background-color: #f9fafb;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .contract-footer {
+            border-top: 1px solid #e5e7eb;
+            padding-top: 20px;
+            margin-top: 40px;
+            text-align: center;
+            font-size: 9px;
+            color: #6b7280;
+        }
+
+        .contract-footer-content {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .contract-footer p {
+            margin: 0 0 8px 0;
+        }
+
+        .contract-footer .footer-line {
+            border-top: 1px solid #e5e7eb;
+            margin: 8px 0 4px 0;
+        }
+
+        .contract-footer .page-info {
+            font-weight: 500;
+            color: #374151;
+        }
+
+        /* Print optimizations */
+        @media print {
+            .contract-content {
+                page-break-inside: avoid;
+            }
+
+            .contract-content h1,
+            .contract-content h2,
+            .contract-content h3 {
+                page-break-after: avoid;
+            }
+
+            .contract-content p {
+                page-break-inside: avoid;
+            }
+
+            .contract-content ul,
+            .contract-content ol {
+                page-break-inside: avoid;
+            }
+        }
+
+        /* Hide elements that shouldn't appear in PDF */
+        @media screen {
+            .no-pdf {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="contract-container">
+        <!-- Contract Header -->
+        <header class="contract-header">
+            <div class="contract-logo-section">
+                {{#if logo_url}}
+                <img src="{{logo_url}}" alt="EZ Biz Contract Logo" class="contract-logo" />
+                {{/if}}
+                <div class="contract-title-section">
+                    <h1>{{contract_title}}</h1>
+                    <p class="contract-subtitle">{{contract_subtitle}}</p>
+                </div>
+            </div>
+            <div class="contract-meta">
+                <p><strong>Generated:</strong> {{generation_date}}</p>
+                <p><strong>Revision:</strong> {{revision_number}}</p>
+                {{#if client_name}}
+                <p><strong>Client:</strong> {{client_name}}</p>
+                {{/if}}
+                <p><strong>Platform:</strong> EZ Biz Contract</p>
+            </div>
+        </header>
+
+        <!-- Contract Content -->
+        <main class="contract-content">
+            {{{contract_body_html}}}
+        </main>
+
+        <!-- Contract Footer -->
+        <footer class="contract-footer">
+            <div class="contract-footer-content">
+                <p><strong>EZ Biz Contract</strong> - Professional Contract Analysis & Drafting</p>
+                <p>This contract was generated using AI-powered analysis trained on hundreds of real contracts.</p>
+                <p>For questions or support, visit <strong>www.ezbizcontract.com</strong></p>
+                <div class="footer-line"></div>
+                <p class="page-info">Page <span class="pageNumber"></span> of <span class="totalPages"></span></p>
+            </div>
+        </footer>
+    </div>
+</body>
+
+</html>

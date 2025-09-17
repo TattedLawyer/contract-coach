@@ -895,7 +895,7 @@ export const ContractDraftingWizard: React.FC<ContractDraftingWizardProps> = ({
                                 <p className="text-sm text-blue-800">
                                     This feature drafts contracts with slight strategic advantages favoring your chosen side,
                                     including favorable wording in indemnification, liability, termination, and payment terms.
-                                    Contracts remain professionally drafted and legally sound.
+                                    Contracts remain professionally drafted and high-quality.
                                 </p>
                             </div>
 

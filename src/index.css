@@ -8,89 +8,125 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 0 100% 98%;
+    /* Light Peach */
+    --foreground: 210 10% 47%;
+    /* Warm Gray */
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 210 10% 47%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 210 10% 47%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 0 78% 84%;
+    /* Soft Salmon */
+    --primary-foreground: 210 10% 15%;
+    /* Dark Gray */
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 0 100% 96%;
+    /* Very Light Peach */
+    --secondary-foreground: 0 71% 65%;
+    /* Deep Salmon */
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 0 100% 96%;
+    --muted-foreground: 210 10% 60%;
+    /* Medium Gray */
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 0 100% 75%;
+    /* Coral */
+    --accent-foreground: 0 0% 100%;
+    /* White */
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 0 20% 90%;
+    --input: 0 20% 90%;
+    --ring: 0 78% 84%;
+    /* Soft Salmon */
 
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
+    /* Light peach background */
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-foreground: 210 10% 47%;
+    /* Warm gray */
 
-    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary: 0 78% 84%;
+    /* Soft salmon */
 
-    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-primary-foreground: 210 10% 15%;
+    /* Dark gray */
 
-    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent: 0 100% 96%;
+    /* Very light peach */
 
-    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-accent-foreground: 0 71% 65%;
+    /* Deep salmon */
 
-    --sidebar-border: 220 13% 91%;
+    --sidebar-border: 0 20% 90%;
 
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-ring: 0 78% 84%;
+    /* Soft salmon */
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 0 10% 8%;
+    /* Dark version of light peach */
+    --foreground: 0 20% 85%;
+    /* Light warm gray */
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 0 10% 10%;
+    /* Slightly lighter than background */
+    --card-foreground: 0 20% 85%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 0 10% 10%;
+    --popover-foreground: 0 20% 85%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 0 78% 70%;
+    /* Darker soft salmon */
+    --primary-foreground: 0 0% 5%;
+    /* Very dark */
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 0 15% 15%;
+    /* Dark secondary */
+    --secondary-foreground: 0 78% 84%;
+    /* Light soft salmon */
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 0 15% 15%;
+    --muted-foreground: 0 10% 65%;
+    /* Medium gray */
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 0 100% 65%;
+    /* Darker coral */
+    --accent-foreground: 0 0% 5%;
+    /* Very dark */
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 50%;
+    /* Darker red */
+    --destructive-foreground: 0 0% 95%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --border: 0 10% 20%;
+    --input: 0 10% 20%;
+    --ring: 0 78% 70%;
+    /* Dark soft salmon */
+    --sidebar-background: 0 10% 8%;
+    /* Dark background */
+    --sidebar-foreground: 0 20% 85%;
+    /* Light warm gray */
+    --sidebar-primary: 0 78% 70%;
+    /* Dark soft salmon */
+    --sidebar-primary-foreground: 0 0% 95%;
+    /* Very light */
+    --sidebar-accent: 0 15% 15%;
+    /* Dark secondary */
+    --sidebar-accent-foreground: 0 78% 84%;
+    /* Light soft salmon */
+    --sidebar-border: 0 10% 20%;
+    --sidebar-ring: 0 78% 70%;
+    /* Dark soft salmon */
   }
 }
 
@@ -101,5 +137,249 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* Typography System for Analysis Content */
+@layer components {
+  .font-calibri {
+    font-family: 'Calibri', 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    font-feature-settings: 'kern' 1, 'liga' 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .analysis-text {
+    @apply font-calibri text-foreground;
+    line-height: 1.6;
+    font-size: 14px;
+    color: hsl(var(--foreground));
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+
+  .analysis-heading-1 {
+    @apply font-calibri font-bold text-foreground;
+    font-size: 24px;
+    line-height: 1.3;
+    margin: 24px 0 16px 0;
+    page-break-after: avoid;
+  }
+
+  .analysis-heading-2 {
+    @apply font-calibri font-semibold text-foreground;
+    font-size: 20px;
+    line-height: 1.3;
+    margin: 20px 0 12px 0;
+    page-break-after: avoid;
+  }
+
+  .analysis-heading-3 {
+    @apply font-calibri font-semibold text-foreground;
+    font-size: 16px;
+    line-height: 1.4;
+    margin: 16px 0 8px 0;
+    page-break-after: avoid;
+  }
+
+  .analysis-paragraph {
+    @apply font-calibri text-foreground;
+    margin: 12px 0;
+    line-height: 1.6;
+    text-align: justify;
+    hyphens: auto;
+  }
+
+  .analysis-list {
+    @apply font-calibri text-foreground;
+    margin: 12px 0;
+    padding-left: 24px;
+    line-height: 1.6;
+  }
+
+  .analysis-list-item {
+    margin: 6px 0;
+    padding-left: 8px;
+  }
+
+  .analysis-strong {
+    @apply font-calibri font-semibold text-foreground;
+    font-weight: 600;
+  }
+
+  .analysis-emphasis {
+    @apply font-calibri italic text-foreground;
+  }
+
+  .analysis-code {
+    @apply font-mono bg-muted px-2 py-1 rounded text-sm;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+  }
+
+  .analysis-quote {
+    @apply font-calibri italic border-l-4 border-primary pl-4 my-4;
+    font-style: italic;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .analysis-table {
+    @apply font-calibri w-full border-collapse border border-border my-4;
+  }
+
+  .analysis-table th,
+  .analysis-table td {
+    @apply border border-border px-3 py-2 text-left;
+    border-collapse: collapse;
+  }
+
+  .analysis-table th {
+    @apply font-semibold bg-muted/50;
+  }
+}
+
+/* PDF-Specific Styles */
+.pdf-container {
+  font-family: 'Calibri', 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #000000;
+  max-width: 210mm;
+  margin: 0 auto;
+  padding: 20mm;
+  background: white;
+}
+
+.pdf-header {
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 15mm;
+  margin-bottom: 10mm;
+  page-break-after: avoid;
+}
+
+.pdf-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.pdf-logo-section {
+  display: flex;
+  align-items: center;
+  gap: 8mm;
+}
+
+.pdf-logo {
+  height: 12mm;
+  width: auto;
+  object-fit: contain;
+}
+
+.pdf-title-section h1 {
+  font-size: 18px;
+  font-weight: bold;
+  margin: 0 0 2mm 0;
+  color: #000000;
+}
+
+.pdf-subtitle {
+  font-size: 12px;
+  color: #6b7280;
+  margin: 0;
+}
+
+.pdf-meta {
+  text-align: right;
+  font-size: 10px;
+  color: #6b7280;
+}
+
+.pdf-meta p {
+  margin: 0 0 1mm 0;
+}
+
+.pdf-content {
+  margin-bottom: 15mm;
+}
+
+.pdf-heading-1 {
+  font-size: 16px;
+  font-weight: bold;
+  margin: 12mm 0 6mm 0;
+  color: #000000;
+  page-break-after: avoid;
+}
+
+.pdf-heading-2 {
+  font-size: 14px;
+  font-weight: bold;
+  margin: 10mm 0 5mm 0;
+  color: #000000;
+  page-break-after: avoid;
+}
+
+.pdf-heading-3 {
+  font-size: 12px;
+  font-weight: bold;
+  margin: 8mm 0 4mm 0;
+  color: #000000;
+  page-break-after: avoid;
+}
+
+.pdf-paragraph {
+  margin: 4mm 0;
+  text-align: justify;
+  line-height: 1.5;
+  orphans: 3;
+  widows: 3;
+}
+
+.pdf-list-item {
+  margin: 2mm 0;
+  padding-left: 3mm;
+}
+
+.pdf-footer {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 5mm;
+  margin-top: 10mm;
+  page-break-inside: avoid;
+}
+
+.pdf-footer-content {
+  text-align: center;
+  font-size: 9px;
+  color: #6b7280;
+}
+
+.pdf-footer-text {
+  margin: 0 0 3mm 0;
+}
+
+.pdf-footer-line {
+  border-top: 1px solid #e5e7eb;
+  margin: 3mm 0;
+}
+
+.pdf-page-number {
+  margin: 0;
+  font-weight: bold;
+}
+
+/* Print-specific optimizations */
+@media print {
+  .pdf-container {
+    margin: 0;
+    padding: 15mm;
+    box-shadow: none;
+  }
+
+  .pdf-heading-1,
+  .pdf-heading-2,
+  .pdf-heading-3 {
+    page-break-after: avoid;
+  }
+
+  .pdf-paragraph {
+    page-break-inside: avoid;
   }
 }

@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { FileText, Brain, CheckCircle, Loader2, Upload, X, Wand2, Download } from "lucide-react";
 import { useDropzone } from "react-dropzone";
@@ -15,11 +16,15 @@ import { ContractUpgradeResult } from "./ContractUpgradeResult";
 import { downloadAsPDF, downloadAsDocx, getDownloadFilename } from "@/lib/downloadUtils";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ContractDraftingWizard } from "./ContractDraftingWizard";
+import { FullAnalysisReport } from "./FullAnalysisReport";
+import { AnalysisPaywall } from "./AnalysisPaywall";
+import { UpgradePaywall } from "./UpgradePaywall";
 
 // Configure PDF.js worker - using local worker for reliability
 pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
 
 export const ContractAnalysis = () => {
+  const { user } = useAuth();
   const [contractText, setContractText] = useState("");
   const [draftPrompt, setDraftPrompt] = useState("");
   const [analysis, setAnalysis] = useState("");
@@ -27,6 +32,8 @@ export const ContractAnalysis = () => {
   const [analysisType, setAnalysisType] = useState<'draft' | 'analyze'>('analyze');
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isProcessingFile, setIsProcessingFile] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
+  const [hasSubscription, setHasSubscription] = useState(false);
   const { toast } = useToast();
 
   // Upgrade flow state - reset when analysis type changes
@@ -44,6 +51,11 @@ export const ContractAnalysis = () => {
   const [contractGrade, setContractGrade] = useState<string>('');
   const [gradeScore, setGradeScore] = useState<number>(0);
 
+  // Check subscription status on component mount and when user changes
+  useEffect(() => {
+    checkSubscriptionStatus();
+  }, [user]);
+
   // Reset upgrade state when analysis type changes
   useEffect(() => {
     // Reset all upgrade-related state when switching analysis types
@@ -59,6 +71,26 @@ export const ContractAnalysis = () => {
     setGradeScore(0); // Reset grade score
     // DON'T reset contractText or analysis - these should persist across tab switches
   }, [analysisType]);
+
+  // Check if user has subscription or is admin developer
+  const checkSubscriptionStatus = async () => {
+    if (!user) {
+      setHasSubscription(false);
+      return;
+    }
+
+    // Admin/Developer accounts - bypass paywall for testing
+    const adminEmails = ['tatted@outkast.world', 'tatted@mnnt.io'];
+
+    if (adminEmails.includes(user.email || '')) {
+      setHasSubscription(true);
+      return;
+    }
+
+    // TODO: Replace with actual subscription check from your backend
+    // For now, regular users get paywall
+    setHasSubscription(false);
+  };
 
   // Enhanced file validation
   const validateFile = (file: File): string | null => {
@@ -773,24 +805,35 @@ export const ContractAnalysis = () => {
                 </CardDescription>
               </div>
               <div className="flex items-center gap-2">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      <Download className="h-4 w-4 mr-2" />
-                      Download
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => handleDownloadAnalysis('pdf')}>
-                      <FileText className="h-4 w-4 mr-2" />
-                      Download as PDF
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleDownloadAnalysis('docx')}>
-                      <FileText className="h-4 w-4 mr-2" />
-                      Download as DOCX
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                {hasSubscription ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <Download className="h-4 w-4 mr-2" />
+                        Download
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleDownloadAnalysis('pdf')}>
+                        <FileText className="h-4 w-4 mr-2" />
+                        Download as PDF
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleDownloadAnalysis('docx')}>
+                        <FileText className="h-4 w-4 mr-2" />
+                        Download as DOCX
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => window.open('https://ezbizcontract.com/pricing', '_blank')}
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Upgrade to Download
+                  </Button>
+                )}
               </div>
             </div>
           </CardHeader>
@@ -823,58 +866,23 @@ export const ContractAnalysis = () => {
               </div>
             )}
 
-            <div className="prose max-w-none prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-ul:text-foreground prose-li:text-foreground">
-              <div className="text-sm bg-muted p-6 rounded-lg overflow-auto whitespace-pre-line">
-                {analysis}
-              </div>
-            </div>
-
-            {/* Upgrade Suggestions Summary */}
-            {analysisType === 'analyze' && upgradeSuggestions && upgradeSuggestions.categories && upgradeSuggestions.categories.length > 0 && (
-              <div className="mt-6 p-4 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-800">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
-                      <Wand2 className="h-5 w-5 text-green-600 dark:text-green-400" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-green-900 dark:text-green-100">
-                        {upgradeSuggestions.categories.length} Upgrade Categories Available
-                      </h3>
-                      <p className="text-sm text-green-700 dark:text-green-300">
-                        {upgradeSuggestions.categories.reduce((total: number, cat: any) => total + cat.suggestions.length, 0)} specific suggestions to improve your contract
-                      </p>
-                    </div>
-                  </div>
-                  <Button onClick={handleStartUpgrade} className="bg-green-600 hover:bg-green-700">
-                    <Wand2 className="h-4 w-4 mr-2" />
-                    Apply Suggestions
-                  </Button>
-                </div>
-
-                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {upgradeSuggestions.categories.slice(0, 3).map((category: any, index: number) => (
-                    <div key={index} className="flex items-center gap-2 text-sm">
-                      <Badge variant={
-                        category.priority === 'high' ? 'destructive' :
-                          category.priority === 'medium' ? 'default' : 'secondary'
-                      } className="text-xs">
-                        {category.priority}
-                      </Badge>
-                      <span className="text-green-800 dark:text-green-200 truncate">{category.title}</span>
-                      <span className="text-green-600 dark:text-green-400 text-xs">
-                        ({category.suggestions.length})
-                      </span>
-                    </div>
-                  ))}
-                  {upgradeSuggestions.categories.length > 3 && (
-                    <div className="text-sm text-green-600 dark:text-green-400">
-                      +{upgradeSuggestions.categories.length - 3} more categories
-                    </div>
-                  )}
-                </div>
-              </div>
+            {/* Conditional Rendering: Full Analysis or Paywall */}
+            {hasSubscription ? (
+              <FullAnalysisReport
+                analysis={analysis}
+                contractGrade={contractGrade}
+                gradeScore={gradeScore}
+                analysisType={analysisType}
+                upgradeSuggestions={upgradeSuggestions}
+                handleStartUpgrade={handleStartUpgrade}
+              />
+            ) : (
+              <AnalysisPaywall
+                onUpgradeClick={() => window.open('https://ezbizcontract.com/pricing', '_blank')}
+              />
             )}
+
+            {/* Upgrade suggestions are now handled by FullAnalysisReport component */}
           </CardContent>
         </Card>
       )}

@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { TrainingContractUpload } from "@/components/TrainingContractUpload";
 import { ContractAnalysis } from "@/components/ContractAnalysis";
+import { TrainingDataAnalysis } from "@/components/TrainingDataAnalysis";
 import { useUserRole } from "@/hooks/useUserRole";
 import { FileText, Upload, Shield, FileCheck, Star, Calendar, Play, Settings } from "lucide-react";
 
@@ -58,36 +59,49 @@ const Index = () => {
     return (
       <div className="min-h-screen bg-background">
         {/* Navigation Header */}
-        <nav className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <div className="container mx-auto px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="text-2xl font-bold text-foreground">Contract Coach</div>
-              <div className="flex items-center gap-4">
-                <Link to="/auth">
-                  <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
-                    Log in
-                  </Button>
-                </Link>
-                <Link to="/auth">
-                  <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
-                    Start Free Trial
-                  </Button>
-                </Link>
-              </div>
+        <header className="absolute top-0 left-0 w-full p-4 md:p-6 z-10">
+          <nav className="container mx-auto flex justify-between items-center">
+
+            {/* ===== LOGO (LEFT SIDE) ===== */}
+            <div>
+              <a href="/" aria-label="EZ Biz Contract Home">
+                <img
+                  src="/Andrometa Brand Kit.svg"
+                  alt="EZ Biz Contract Logo"
+                  className="h-10 w-auto md:h-12"
+                />
+              </a>
             </div>
-          </div>
-        </nav>
+
+            {/* ===== NAVIGATION LINKS (RIGHT SIDE) ===== */}
+            <div className="flex items-center space-x-4">
+              <Link to="/auth">
+                <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
+                  Log in
+                </Button>
+              </Link>
+              <Link to="/auth">
+                <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+                  Analyze Contract
+                </Button>
+              </Link>
+            </div>
+
+          </nav>
+        </header>
 
         {/* Trust indicators */}
         <div className="border-b border-border/40 bg-background/50">
-          <div className="container mx-auto px-6 py-4">
+          <div className="container mx-auto px-2 py-3">
             <div className="flex items-center justify-center gap-8 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <Shield className="h-4 w-4" />
                 Enterprise-grade security
               </div>
               <div className="w-px h-4 bg-border"></div>
-              <div>GDPR compliant</div>
+              <div>AI trained on 1000+ real contracts</div>
+              <div className="w-px h-4 bg-border"></div>
+              <div>Make it EZ guarantee</div>
               <div className="w-px h-4 bg-border"></div>
               <div>24/7 support</div>
             </div>
@@ -95,72 +109,110 @@ const Index = () => {
         </div>
 
         {/* Hero Section - Contract Drafting/Analysis */}
-        <div className="container mx-auto px-6 pt-20 pb-32">
-          <div className="text-center space-y-8 max-w-4xl mx-auto">
-            <div className="space-y-6">
-              <h1 className="text-5xl lg:text-7xl font-bold leading-tight tracking-tight">
-                <span className="block text-foreground">Draft & Analyze</span>
-                <span className="block bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent">
-                  Contracts Smarter
-                </span>
-              </h1>
+        <div className="container mx-auto px-2 pt-12 pb-16">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Column 1: Text Content (left-aligned) */}
+            <div className="text-left space-y-6">
+              <div className="space-y-4">
+                <h1 className="text-4xl lg:text-6xl font-bold leading-tight tracking-tight">
+                  <span className="block text-foreground">Draft & Analyze</span>
+                  <span className="block bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent">
+                    Contracts Smarter
+                  </span>
+                </h1>
 
-              <p className="text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-                Professional contract drafting and AI-powered analysis. Choose your path below.
+                <p className="text-lg lg:text-xl text-muted-foreground leading-relaxed">
+                  AI trained on hundreds of real contracts to make professional contract management EZ. Choose your path below.
+                </p>
+
+                {/* Tagline */}
+                <div className="py-3">
+                  <p className="text-xl lg:text-2xl font-semibold bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent">
+                    Make Biz EZ ✨
+                  </p>
+                </div>
+              </div>
+
+              {/* Contract Options */}
+              <div className="grid md:grid-cols-2 gap-3 mt-8">
+                <Link to="/auth" className="block">
+                  <Card className="h-full hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/50 cursor-pointer group">
+                    <CardContent className="p-8 text-center space-y-4">
+                      <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto group-hover:bg-primary/20 transition-colors">
+                        <FileText className="h-8 w-8 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="text-2xl font-bold mb-2">Draft Contract</h3>
+                        <p className="text-muted-foreground mb-4">
+                          Create professional contracts EZ with our AI-powered wizard. Trained on hundreds of real contracts for maximum accuracy.
+                        </p>
+                        <Button size="lg" className="w-full">
+                          Start Drafting
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+
+                <Link to="/auth" className="block">
+                  <Card className="h-full hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/50 cursor-pointer group">
+                    <CardContent className="p-8 text-center space-y-4">
+                      <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto group-hover:bg-primary/20 transition-colors">
+                        <Shield className="h-8 w-8 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="text-2xl font-bold mb-2">Analyze Contract</h3>
+                        <p className="text-muted-foreground mb-4">
+                          Upload contracts for instant AI analysis. Trained on 1000+ real contracts to make compliance EZ and accurate.
+                        </p>
+                        <Button size="lg" variant="outline" className="w-full">
+                          Start Analyzing
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              </div>
+
+              <p className="text-sm text-muted-foreground pt-4">
+                $19.99 per contract draft (3 revisions included) • $39.99 unlimited • Free contract grade analysis
               </p>
             </div>
 
-            {/* Contract Options */}
-            <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto mt-12">
-              <Link to="/auth" className="block">
-                <Card className="h-full hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/50 cursor-pointer group">
-                  <CardContent className="p-8 text-center space-y-4">
-                    <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto group-hover:bg-primary/20 transition-colors">
-                      <FileText className="h-8 w-8 text-primary" />
+            {/* Column 2: Hero Image */}
+            <div className="hidden lg:block">
+              <div className="relative">
+                <img
+                  src="/hero-image-placeholder.jpg"
+                  alt="Professional contract creator working with AI-powered tools"
+                  className="rounded-lg shadow-xl w-full h-auto object-cover"
+                  onError={(e) => {
+                    // Fallback to a placeholder div if image fails to load
+                    e.currentTarget.style.display = 'none';
+                    const fallback = e.currentTarget.parentElement?.querySelector('.hero-fallback');
+                    if (fallback) {
+                      (fallback as HTMLElement).style.display = 'block';
+                    }
+                  }}
+                />
+                <div className="hero-fallback hidden rounded-lg shadow-xl w-full aspect-[4/3] bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
+                  <div className="text-center p-8">
+                    <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <FileText className="h-10 w-10 text-primary" />
                     </div>
-                    <div>
-                      <h3 className="text-2xl font-bold mb-2">Draft Contract</h3>
-                      <p className="text-muted-foreground mb-4">
-                        Create professional contracts with our guided wizard. Choose from service agreements, NDAs, employment contracts, and more.
-                      </p>
-                      <Button size="lg" className="w-full">
-                        Start Drafting
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-
-              <Link to="/auth" className="block">
-                <Card className="h-full hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/50 cursor-pointer group">
-                  <CardContent className="p-8 text-center space-y-4">
-                    <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto group-hover:bg-primary/20 transition-colors">
-                      <Shield className="h-8 w-8 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="text-2xl font-bold mb-2">Analyze Contract</h3>
-                      <p className="text-muted-foreground mb-4">
-                        Upload existing contracts for AI-powered analysis, risk detection, and compliance review.
-                      </p>
-                      <Button size="lg" variant="outline" className="w-full">
-                        Start Analyzing
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
+                    <h3 className="text-lg font-semibold text-foreground mb-2">Hero Image</h3>
+                    <p className="text-sm text-muted-foreground">Coming Soon</p>
+                  </div>
+                </div>
+              </div>
             </div>
-
-            <p className="text-sm text-muted-foreground pt-4">
-              Free trial available • No credit card required • Enterprise-grade security
-            </p>
           </div>
         </div>
 
         {/* Features Section - Industry-Leading Contract Tools */}
-        <div className="py-20">
-          <div className="container mx-auto px-6">
-            <div className="text-center mb-16">
+        <div className="py-12">
+          <div className="container mx-auto px-2">
+            <div className="text-center mb-12">
               <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
                 Industry-Leading Contract Intelligence
               </h2>
@@ -169,9 +221,9 @@ const Index = () => {
               </p>
             </div>
 
-            <div className="grid lg:grid-cols-2 gap-12 items-center mb-20">
+            <div className="grid lg:grid-cols-2 gap-8 items-center mb-12">
               {/* Feature Cards */}
-              <div className="space-y-8">
+              <div className="space-y-6">
                 <div className="flex gap-4">
                   <div className="p-3 rounded-lg bg-primary/10 border border-primary/20 flex-shrink-0">
                     <Shield className="h-6 w-6 text-primary" />
@@ -179,7 +231,7 @@ const Index = () => {
                   <div>
                     <h3 className="font-semibold text-lg mb-2">Risk Detection & Compliance</h3>
                     <p className="text-muted-foreground">
-                      Automatically identify potential legal risks, compliance issues, and unfavorable terms with AI-powered analysis.
+                      AI trained on hundreds of real contracts automatically identifies risks, compliance issues, and unfavorable terms - making due diligence EZ.
                     </p>
                   </div>
                 </div>
@@ -191,7 +243,7 @@ const Index = () => {
                   <div>
                     <h3 className="font-semibold text-lg mb-2">Instant Analysis</h3>
                     <p className="text-muted-foreground">
-                      Get comprehensive contract analysis in seconds, not hours. Extract key terms, obligations, and deadlines automatically.
+                      Get comprehensive analysis in seconds with AI trained on 1000+ real contracts. Extract terms, obligations, and deadlines EZ.
                     </p>
                   </div>
                 </div>
@@ -203,7 +255,7 @@ const Index = () => {
                   <div>
                     <h3 className="font-semibold text-lg mb-2">Professional Drafting</h3>
                     <p className="text-muted-foreground">
-                      Create legally sound contracts with our guided wizard. Choose from service agreements, NDAs, employment contracts, and more.
+                      Create professionally sound contracts EZ with our AI-guided wizard. Choose from service agreements, NDAs, employment contracts, and more.
                     </p>
                   </div>
                 </div>
@@ -235,7 +287,7 @@ const Index = () => {
                   </div>
                   <Link to="/auth" className="block">
                     <Button className="w-full" size="lg">
-                      Start Free Trial
+                      Get Started
                     </Button>
                   </Link>
                 </CardContent>
@@ -245,10 +297,10 @@ const Index = () => {
         </div>
 
         {/* FAQ Section */}
-        <div className="bg-muted/30 py-20">
-          <div className="container mx-auto px-6">
+        <div className="bg-muted/30 py-12">
+          <div className="container mx-auto px-2">
             <div className="max-w-4xl mx-auto">
-              <div className="text-center mb-16">
+              <div className="text-center mb-12">
                 <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
                   Frequently Asked Questions
                 </h2>
@@ -262,7 +314,7 @@ const Index = () => {
                   <CardContent className="p-6">
                     <h3 className="text-lg font-semibold mb-3">How do I get started with contract drafting?</h3>
                     <p className="text-muted-foreground">
-                      Simply sign up for a free trial, choose "Draft Contract" from the main dashboard, and follow our guided wizard.
+                      Simply sign up and choose "Draft Contract" from the main dashboard, and follow our guided wizard.
                       Select your contract type, answer a few questions about the parties and terms, and we'll generate a professional contract for you.
                     </p>
                   </CardContent>
@@ -328,7 +380,7 @@ const Index = () => {
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link to="/auth">
                     <Button size="lg" className="px-8 py-3">
-                      Start Free Trial
+                      Get Started
                     </Button>
                   </Link>
                   <Button size="lg" variant="outline" className="px-8 py-3">
@@ -344,46 +396,72 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen bg-background p-3">
+      <div className="max-w-7xl mx-auto space-y-4">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Welcome back</h1>
-            <p className="text-muted-foreground">{user.email}</p>
-          </div>
-          <div className="flex gap-2">
-            {user.email === 'tatted@mnnt.io' && (
-              <Button
-                onClick={handleAssignAdmin}
-                disabled={assigningAdmin}
-                variant="secondary"
-              >
-                {assigningAdmin ? 'Assigning...' : 'Assign Admin Role'}
-              </Button>
-            )}
-            <Link to="/settings">
-              <Button variant="ghost">
-                <Settings className="h-4 w-4 mr-2" />
-                Settings
-              </Button>
-            </Link>
-            <Button onClick={signOut} variant="outline">
-              Sign Out
-            </Button>
-          </div>
-        </div>
+        <header className="w-full p-4 md:p-6 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <nav className="container mx-auto flex justify-between items-center">
+
+            {/* ===== LOGO (LEFT SIDE) ===== */}
+            <div>
+              <a href="/" aria-label="EZ Biz Contract Home">
+                <img
+                  src="/Andrometa Brand Kit.svg"
+                  alt="EZ Biz Contract Logo"
+                  className="h-10 w-auto md:h-12"
+                />
+              </a>
+            </div>
+
+            {/* ===== WELCOME TEXT AND SETTINGS (RIGHT SIDE) ===== */}
+            <div className="flex items-center gap-2">
+              {/* Welcome text and user info */}
+              <div className="text-right">
+                <h1 className="text-2xl font-bold">Welcome back</h1>
+                <p className="text-muted-foreground text-sm">{user.email}</p>
+              </div>
+
+              {/* Settings button with Sign Out */}
+              <div className="flex gap-1">
+                {user.email === 'tatted@mnnt.io' && (
+                  <Button
+                    onClick={handleAssignAdmin}
+                    disabled={assigningAdmin}
+                    variant="secondary"
+                    size="sm"
+                  >
+                    {assigningAdmin ? 'Assigning...' : 'Assign Admin'}
+                  </Button>
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    // For now, just sign out when settings is clicked
+                    // You can expand this to show a dropdown menu later
+                    signOut();
+                  }}
+                >
+                  <Settings className="h-4 w-4 mr-2" />
+                  Settings
+                </Button>
+              </div>
+            </div>
+
+          </nav>
+        </header>
 
         {/* Admin Panel */}
         {isAdmin && (
           <div className="space-y-6">
-            <h2 className="text-2xl font-semibold">Admin Panel</h2>
+            <h2 className="text-xl font-semibold">Admin Panel</h2>
             <TrainingContractUpload />
+            <TrainingDataAnalysis />
           </div>
         )}
 
         {/* Main Content */}
-        <div className="grid lg:grid-cols-3 gap-6">
+        <div className="grid lg:grid-cols-3 gap-4">
           <Card className="lg:col-span-2">
             <CardHeader>
               <CardTitle>Contract Analysis</CardTitle>
@@ -396,7 +474,7 @@ const Index = () => {
             </CardContent>
           </Card>
 
-          <div className="space-y-6">
+          <div className="space-y-3">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -404,7 +482,7 @@ const Index = () => {
                   Quick Actions
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="space-y-2">
                 <Button className="w-full" variant="outline">
                   <Upload className="h-4 w-4 mr-2" />
                   Upload Contract

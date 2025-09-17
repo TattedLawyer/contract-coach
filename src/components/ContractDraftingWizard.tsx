@@ -668,6 +668,10 @@ export const ContractDraftingWizard: React.FC<ContractDraftingWizardProps> = ({
             }
 
             // Call the existing draft endpoint
+            console.log('📝 CONTRACT DRAFTING - Calling analyze-contract function');
+            console.log('📝 Draft prompt length:', prompt.length);
+            console.log('📝 Draft prompt preview:', prompt.substring(0, 200) + '...');
+
             const { data, error } = await supabase.functions.invoke('analyze-contract', {
                 body: {
                     contractText: '',
@@ -676,9 +680,17 @@ export const ContractDraftingWizard: React.FC<ContractDraftingWizardProps> = ({
                 },
             });
 
-            if (error) throw error;
+            if (error) {
+                console.error('📝 CONTRACT DRAFTING - Error from Supabase function:', error);
+                throw error;
+            }
 
-            onComplete(data.contract || data);
+            console.log('📝 CONTRACT DRAFTING - Response received from Supabase');
+            console.log('📝 Response data keys:', Object.keys(data));
+            console.log('📝 Contract length:', data.analysis?.length || 'N/A');
+            console.log('📝 Contract preview:', data.analysis?.substring(0, 200) + '...' || 'N/A');
+
+            onComplete(data.analysis || data);
         } catch (error) {
             console.error('Drafting error:', error);
             toast({

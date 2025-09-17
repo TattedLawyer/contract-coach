@@ -537,6 +537,71 @@ const CONTRACT_TYPES: ContractType[] = [
     }
 ];
 
+// Helper function to clean custom contract responses
+const cleanCustomContractResponse = (response: string): string => {
+    console.log('🧹 CUSTOM CONTRACT CLEANING - Original response length:', response.length);
+    console.log('🧹 CUSTOM CONTRACT CLEANING - Original preview:', response.substring(0, 150) + '...');
+
+    let cleaned = response;
+
+    // Remove common AI-generated artifacts and suggestions
+    const patternsToRemove = [
+        /Here is.*contract.*:/gi,
+        /I've drafted.*contract.*:/gi,
+        /Below is.*contract.*:/gi,
+        /Here's.*contract.*:/gi,
+        /---[\s\S]*?---/g, // Markdown separators
+        /Recommendations?:[\s\S]*$/gi, // Any recommendations section
+        /Suggestions?:[\s\S]*$/gi, // Any suggestions section
+        /Improvements?:[\s\S]*$/gi, // Any improvements section
+        /Notes?:[\s\S]*$/gi, // Any notes section
+        /\*\*.*\*\*:[\s\S]*$/gm, // Bold headers with content
+        /Please note.*$/gi, // Please note statements
+        /Additional.*:$/gi, // Additional sections
+        /Important.*:$/gi, // Important sections
+        /Consider.*$/gi, // Consider statements
+        /You may.*$/gi, // You may statements
+        /It is recommended.*$/gi, // Recommendations
+        /This contract.*includes.*$/gi, // Meta comments
+        /^[\s\S]*?(?=This Agreement|This Contract|WHEREAS|PARTIES|AGREEMENT)/gi, // Remove everything before contract start
+    ];
+
+    patternsToRemove.forEach(pattern => {
+        cleaned = cleaned.replace(pattern, '');
+    });
+
+    // Clean up excessive whitespace
+    cleaned = cleaned.replace(/\n\s*\n\s*\n/g, '\n\n');
+    cleaned = cleaned.trim();
+
+    // Ensure we start with actual contract content
+    const contractStarters = [
+        /^This Agreement/i,
+        /^This Contract/i,
+        /^WHEREAS/i,
+        /^PARTIES:/i,
+        /^AGREEMENT/i,
+        /^CONTRACT/i
+    ];
+
+    let finalContract = cleaned;
+    for (const starter of contractStarters) {
+        const match = cleaned.match(starter);
+        if (match && match.index && match.index > 0) {
+            // Only cut if we're removing a significant amount of non-contract text
+            if (match.index > 20) {
+                finalContract = cleaned.substring(match.index);
+                break;
+            }
+        }
+    }
+
+    console.log('✅ CUSTOM CONTRACT CLEANING - Final result length:', finalContract.length);
+    console.log('✅ CUSTOM CONTRACT CLEANING - Final preview:', finalContract.substring(0, 150) + '...');
+
+    return finalContract.trim();
+};
+
 export const ContractDraftingWizard: React.FC<ContractDraftingWizardProps> = ({
     onComplete,
     onBack,
@@ -632,7 +697,13 @@ export const ContractDraftingWizard: React.FC<ContractDraftingWizardProps> = ({
             let prompt = `Please draft a comprehensive ${selectedContractType.name} with the following details:\n\n`;
 
             if (selectedContractType.id === 'custom') {
-                prompt += draftingData.fullDescription;
+                // For custom contracts, request clean contract without suggestions
+                prompt = `Please draft a comprehensive contract based on the following description. Return ONLY the contract text without any suggestions, analysis, or additional commentary.
+
+CONTRACT REQUIREMENTS:
+${draftingData.fullDescription}
+
+IMPORTANT: Return only the clean contract text. Do not include any suggestions, analysis, recommendations, or formatting instructions in your response.`;
             } else {
                 // Format structured data for known contract types
                 const visibleQuestions = getVisibleQuestions();
@@ -690,7 +761,16 @@ export const ContractDraftingWizard: React.FC<ContractDraftingWizardProps> = ({
             console.log('📝 Contract length:', data.analysis?.length || 'N/A');
             console.log('📝 Contract preview:', data.analysis?.substring(0, 200) + '...' || 'N/A');
 
-            onComplete(data.analysis || data);
+            // For custom contracts, ensure we get clean contract text
+            let cleanContract = data.analysis || data;
+
+            if (selectedContractType.id === 'custom') {
+                // Additional cleaning for custom contracts to remove any suggestions
+                cleanContract = cleanCustomContractResponse(cleanContract);
+                console.log('📝 CUSTOM CONTRACT - Cleaned response length:', cleanContract.length);
+            }
+
+            onComplete(cleanContract);
         } catch (error) {
             console.error('Drafting error:', error);
             toast({
@@ -863,17 +943,38 @@ export const ContractDraftingWizard: React.FC<ContractDraftingWizardProps> = ({
                         <div className="space-y-4">
                             <h3 className="text-lg font-semibold flex items-center gap-2">
                                 <Lightbulb className="h-5 w-5" />
-                                Or Describe Your Contract
+                                Or Describe Your Custom Contract
                             </h3>
+                            <Card className="bg-blue-50 border-blue-200">
+                                <CardContent className="p-4">
+                                    <div className="flex items-start gap-3">
+                                        <div className="text-blue-600 mt-0.5">
+                                            <Lightbulb className="h-5 w-5" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <h4 className="font-semibold text-blue-900">Describe Your Contract</h4>
+                                            <p className="text-sm text-blue-800">
+                                                For contracts that don't fit our templates, provide a detailed description and our AI will draft a professional contract for you.
+                                            </p>
+                                            <div className="text-xs text-blue-700 space-y-1">
+                                                <p><strong>Include:</strong> Parties involved, payment terms, responsibilities, duration, key clauses</p>
+                                                <p><strong>Result:</strong> Clean, professional contract ready for use</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
                             <div className="space-y-3">
                                 <Textarea
-                                    placeholder="Describe the contract you want to draft. Include parties involved, payment terms, responsibilities, duration, etc."
+                                    placeholder="Example: 'I need a contract for a freelance graphic designer. The client is ABC Corp. Payment is $2,500 total, paid in 2 installments. Work includes logo design and branding materials. Duration is 4 weeks. Include confidentiality and IP ownership clauses.'"
                                     value={customDescription}
                                     onChange={(e) => setCustomDescription(e.target.value)}
-                                    rows={4}
+                                    rows={5}
+                                    className="min-h-[120px]"
                                 />
-                                <Button onClick={handleCustomDescription} disabled={!customDescription.trim()}>
-                                    Draft Custom Contract
+                                <Button onClick={handleCustomDescription} disabled={!customDescription.trim()} className="w-full">
+                                    <FileText className="h-4 w-4 mr-2" />
+                                    Generate Custom Contract
                                 </Button>
                             </div>
                         </div>

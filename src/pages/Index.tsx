@@ -111,8 +111,8 @@ const Index = () => {
         {/* Hero Section - Contract Drafting/Analysis */}
         <div className="container mx-auto px-2 pt-12 pb-16">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Column 1: Text Content (left-aligned) */}
-            <div className="text-left space-y-6">
+            {/* Column 1: Text Content (centered) */}
+            <div className="text-center space-y-6">
               <div className="space-y-4">
                 <h1 className="text-4xl lg:text-6xl font-bold leading-tight tracking-tight">
                   <span className="block text-foreground">Draft & Analyze</span>

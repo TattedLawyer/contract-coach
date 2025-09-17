@@ -128,6 +128,21 @@ export const ContractAnalysis = () => {
     return null; // Valid file
   };
 
+  // Helper function to clear all analysis state for a fresh restart
+  const clearAnalysisState = useCallback(() => {
+    setAnalysis("");
+    setUpgradeSuggestions(null);
+    setContractGrade("");
+    setGradeScore(0);
+    setShowUpgradeOptions(false);
+    setShowUpgradeResult(false);
+    setOriginalContractForUpgrade("");
+    setUpgradedContract("");
+    setAppliedChanges([]);
+    setRevisionCount(0);
+    setIsUpgrading(false);
+  }, []);
+
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     if (!file) return;
@@ -145,6 +160,9 @@ export const ContractAnalysis = () => {
 
     setUploadedFile(file);
     setIsProcessingFile(true);
+
+    // Clear all previous analysis state for a fresh restart
+    clearAnalysisState();
 
     try {
       let extractedText = "";
@@ -727,6 +745,8 @@ export const ContractAnalysis = () => {
                             e.stopPropagation();
                             setUploadedFile(null);
                             setContractText("");
+                            // Clear analysis state when clearing the file
+                            clearAnalysisState();
                           }}
                         >
                           <X className="h-3 w-3" />
@@ -757,7 +777,14 @@ export const ContractAnalysis = () => {
                   <Textarea
                     placeholder="Paste the contract text you want to review..."
                     value={contractText}
-                    onChange={(e) => setContractText(e.target.value)}
+                    onChange={(e) => {
+                      const newValue = e.target.value;
+                      // Clear analysis state when starting fresh input (empty to non-empty transition)
+                      if (contractText === "" && newValue !== "") {
+                        clearAnalysisState();
+                      }
+                      setContractText(newValue);
+                    }}
                     rows={8}
                   />
                 </div>

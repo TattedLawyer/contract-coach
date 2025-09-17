@@ -7,13 +7,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { FileText, Brain, CheckCircle, Loader2, Upload, X, Wand2, Download } from "lucide-react";
+import { FileText, Brain, CheckCircle, Loader2, Upload, X, Wand2, Download, ArrowLeft } from "lucide-react";
 import { useDropzone } from "react-dropzone";
 import * as pdfjsLib from "pdfjs-dist";
 import mammoth from "mammoth";
 import { ContractUpgradeSuggestions } from "./ContractUpgradeSuggestions";
 import { ContractUpgradeResult } from "./ContractUpgradeResult";
-import { downloadAsPDF, downloadAsDocx, getDownloadFilename } from "@/lib/downloadUtils";
+import { downloadAsPDF, downloadAsDocx, downloadAsTXT, getDownloadFilename } from "@/lib/downloadUtils";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ContractDraftingWizard } from "./ContractDraftingWizard";
 import { FullAnalysisReport } from "./FullAnalysisReport";
@@ -31,6 +31,7 @@ export const ContractAnalysis = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisType, setAnalysisType] = useState<'draft' | 'analyze'>('analyze');
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [hasDraftedContract, setHasDraftedContract] = useState(false);
   const [isProcessingFile, setIsProcessingFile] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
   const [hasSubscription, setHasSubscription] = useState(false);
@@ -141,6 +142,7 @@ export const ContractAnalysis = () => {
     setAppliedChanges([]);
     setRevisionCount(0);
     setIsUpgrading(false);
+    setHasDraftedContract(false); // Reset drafted contract flag
   }, []);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
@@ -619,6 +621,48 @@ export const ContractAnalysis = () => {
     }
   };
 
+  const handleDownloadContract = async (format: 'pdf' | 'docx' | 'txt') => {
+    if (!contractText || contractText.trim().length === 0) {
+      toast({
+        title: "No Contract Available",
+        description: "Please draft a contract first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const filename = getDownloadFilename('drafted_contract', format);
+
+      if (format === 'pdf') {
+        await downloadAsPDF(contractText, filename);
+        toast({
+          title: "PDF Downloaded",
+          description: `Contract saved as ${filename}`,
+        });
+      } else if (format === 'docx') {
+        await downloadAsDocx(contractText, filename);
+        toast({
+          title: "DOCX Downloaded",
+          description: `Contract saved as ${filename}`,
+        });
+      } else if (format === 'txt') {
+        await downloadAsTXT(contractText, filename);
+        toast({
+          title: "TXT Downloaded",
+          description: `Contract saved as ${filename}`,
+        });
+      }
+    } catch (error) {
+      console.error('Contract download error:', error);
+      toast({
+        title: "Download Failed",
+        description: "Failed to download contract. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   // Upgrade functions
   const handleStartUpgrade = () => {
     console.log('🔍 DEBUG: handleStartUpgrade called');
@@ -713,10 +757,11 @@ export const ContractAnalysis = () => {
               <ContractDraftingWizard
                 onComplete={(contractText) => {
                   setContractText(contractText);
-                  setAnalysisType('analyze'); // Switch to analyze tab to show the drafted contract
+                  setHasDraftedContract(true);
+                  setAnalysisType('analyze'); // Keep on analyze tab to show download options
                   toast({
                     title: "Contract Drafted Successfully",
-                    description: "Your contract has been generated and is ready for review.",
+                    description: "Your contract has been generated and is ready for download.",
                   });
                 }}
                 onBack={() => setAnalysisType('analyze')}
@@ -898,6 +943,92 @@ export const ContractAnalysis = () => {
                   </div>
                 </div>
               </div>
+            )}
+
+            {/* Drafted Contract View */}
+            {hasDraftedContract && contractText && !analysis && (
+              <Card className="mt-6">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        <FileText className="h-5 w-5 text-green-600" />
+                        Contract Drafted Successfully
+                      </CardTitle>
+                      <CardDescription>
+                        Your professional contract has been generated and is ready for download
+                      </CardDescription>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="outline" size="sm">
+                            <Download className="h-4 w-4 mr-2" />
+                            Download
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleDownloadContract('pdf')}>
+                            <FileText className="h-4 w-4 mr-2" />
+                            Download as PDF
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleDownloadContract('docx')}>
+                            <FileText className="h-4 w-4 mr-2" />
+                            Download as DOCX
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleDownloadContract('txt')}>
+                            <FileText className="h-4 w-4 mr-2" />
+                            Download as TXT
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                          <CheckCircle className="h-5 w-5 text-green-600" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-green-900">Contract Generated</h4>
+                          <p className="text-sm text-green-700">
+                            Professional contract ready for use. Download in your preferred format above.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="border rounded-lg p-4 max-h-96 overflow-y-auto">
+                      <h4 className="font-semibold mb-3">Contract Preview:</h4>
+                      <div className="text-sm text-gray-700 whitespace-pre-wrap font-mono bg-gray-50 p-3 rounded">
+                        {contractText.length > 1000
+                          ? `${contractText.substring(0, 1000)}...\n\n[Contract continues - download to see full text]`
+                          : contractText
+                        }
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2 pt-2">
+                      <Button
+                        onClick={() => setHasDraftedContract(false)}
+                        variant="outline"
+                      >
+                        <ArrowLeft className="h-4 w-4 mr-2" />
+                        Draft Another Contract
+                      </Button>
+                      <Button
+                        onClick={handleAnalyze}
+                        variant="outline"
+                      >
+                        Analyze This Contract
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             )}
 
             {/* Conditional Rendering: Full Analysis or Paywall */}

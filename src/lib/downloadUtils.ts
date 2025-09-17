@@ -97,6 +97,33 @@ const downloadAsPDFFallback = async (content: string, filename: string) => {
 // Note: Content formatting is now handled by the PDFGenerationService
 // This function is kept for backward compatibility with fallback
 
+// TXT file download function
+export const downloadAsTXT = async (content: string, filename: string = 'contract.txt') => {
+    try {
+        // Create a blob with the text content
+        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+
+        // Create download link
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+
+        // Trigger download
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // Clean up
+        URL.revokeObjectURL(url);
+
+        console.log('📄 TXT file downloaded successfully:', filename);
+    } catch (error) {
+        console.error('Error downloading TXT file:', error);
+        throw new Error('Failed to download TXT file');
+    }
+};
+
 export const downloadAsDocx = async (content: string, filename: string = 'contract.docx') => {
     try {
         // Dynamic import to avoid build issues

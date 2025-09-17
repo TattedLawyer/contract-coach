@@ -126,7 +126,7 @@ const Index = () => {
                 </p>
 
                 {/* Tagline */}
-                <div className="py-3">
+                <div className="py-3 text-center">
                   <p className="text-xl lg:text-2xl font-semibold bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent">
                     Make Biz EZ ✨
                   </p>

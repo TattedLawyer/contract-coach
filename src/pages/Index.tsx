@@ -377,15 +377,12 @@ const Index = () => {
                 <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
                   Join thousands of professionals who trust EzBiz for their legal document needs.
                 </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <div className="flex justify-center">
                   <Link to="/auth">
                     <Button size="lg" className="px-8 py-3">
                       Get Started
                     </Button>
                   </Link>
-                  <Button size="lg" variant="outline" className="px-8 py-3">
-                    Schedule Demo
-                  </Button>
                 </div>
               </div>
             </div>

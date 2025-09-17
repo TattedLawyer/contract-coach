@@ -7,8 +7,17 @@ export const downloadAsPDF = async (content: string, filename: string = 'contrac
         console.log('Contains "Here is":', content.includes('Here is'));
         console.log('Contains "```":', content.includes('```'));
 
-        // Import the PDF generation service
-        const { PDFGenerationService } = await import('../services/PDFGenerationService');
+        // Try dynamic import first, fallback to static if needed
+        let PDFGenerationService;
+        try {
+            const pdfModule = await import('../services/PDFGenerationService');
+            PDFGenerationService = pdfModule.PDFGenerationService;
+        } catch (importError) {
+            console.error('Dynamic import failed, trying static import:', importError);
+            // Fallback to basic PDF generation
+            return await downloadAsPDFFallback(content, filename);
+        }
+
         const pdfService = new PDFGenerationService();
 
         // Prepare contract data for the service
@@ -127,6 +136,14 @@ export const downloadAsTXT = async (content: string, filename: string = 'contrac
 export const downloadAsDocx = async (content: string, filename: string = 'contract.docx') => {
     try {
         // Dynamic import to avoid build issues
+        let docxImports;
+        try {
+            docxImports = await import('docx');
+        } catch (importError) {
+            console.error('DOCX library import failed:', importError);
+            throw new Error('DOCX library not available. Please try TXT download instead.');
+        }
+
         const {
             Document,
             Packer,
@@ -139,9 +156,8 @@ export const downloadAsDocx = async (content: string, filename: string = 'contra
             TableCell,
             WidthType,
             BorderStyle,
-            PageOrientation,
-            PageSize
-        } = await import('docx');
+            PageOrientation
+        } = docxImports;
 
         // Create document with Calibri font and professional formatting
         const docChildren = [];
@@ -324,8 +340,8 @@ export const downloadAsDocx = async (content: string, filename: string = 'contra
                     properties: {
                         page: {
                             size: {
-                                width: PageSize.A4.width,
-                                height: PageSize.A4.height,
+                                width: 595.28, // A4 width in points (8.27 inches * 72)
+                                height: 841.89, // A4 height in points (11.69 inches * 72)
                                 orientation: PageOrientation.PORTRAIT
                             },
                             margin: {

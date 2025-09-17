@@ -314,8 +314,8 @@ const Index = () => {
                   <CardContent className="p-6">
                     <h3 className="text-lg font-semibold mb-3">How do I get started with contract drafting?</h3>
                     <p className="text-muted-foreground">
-                      Simply sign up and choose "Draft Contract" from the main dashboard, and follow our guided wizard.
-                      Select your contract type, answer a few questions about the parties and terms, and we'll generate a professional contract for you.
+                      Simply sign up and choose "Draft Contract" from the main dashboard, and follow EzBiz's guided wizard.
+                      Select your contract type, answer a few questions about the parties and terms, and EzBiz will generate a professional contract for you.
                     </p>
                   </CardContent>
                 </Card>
@@ -324,8 +324,8 @@ const Index = () => {
                   <CardContent className="p-6">
                     <h3 className="text-lg font-semibold mb-3">What types of contracts can you help me create?</h3>
                     <p className="text-muted-foreground">
-                      We support service agreements, independent contractor agreements, consulting agreements, employment contracts,
-                      partnership agreements, license agreements, and non-disclosure agreements. For other contract types, you can use our custom drafting option.
+                      EzBiz supports service agreements, independent contractor agreements, consulting agreements, employment contracts,
+                      partnership agreements, license agreements, and non-disclosure agreements. For other contract types, you can use EzBiz's custom drafting option.
                     </p>
                   </CardContent>
                 </Card>
@@ -334,7 +334,7 @@ const Index = () => {
                   <CardContent className="p-6">
                     <h3 className="text-lg font-semibold mb-3">How does contract analysis work?</h3>
                     <p className="text-muted-foreground">
-                      Upload your existing contract (PDF, DOC, or DOCX format up to 25MB), and our AI will analyze it for risks, compliance issues,
+                      Upload your existing contract (PDF, DOC, or DOCX format up to 25MB), and EzBiz's AI will analyze it for risks, compliance issues,
                       key terms, and provide a detailed grade and improvement suggestions. Analysis typically takes just a few seconds.
                     </p>
                   </CardContent>
@@ -344,8 +344,8 @@ const Index = () => {
                   <CardContent className="p-6">
                     <h3 className="text-lg font-semibold mb-3">Is my data secure?</h3>
                     <p className="text-muted-foreground">
-                      Yes, we use enterprise-grade security with end-to-end encryption. Your contracts are processed securely and
-                      never stored permanently. We comply with GDPR and other privacy regulations.
+                      Yes, EzBiz uses enterprise-grade security with end-to-end encryption. Your contracts are processed securely and
+                      never stored permanently. EzBiz complies with GDPR and other privacy regulations.
                     </p>
                   </CardContent>
                 </Card>
@@ -364,7 +364,7 @@ const Index = () => {
                   <CardContent className="p-6">
                     <h3 className="text-lg font-semibold mb-3">Do you provide legal advice?</h3>
                     <p className="text-muted-foreground">
-                      No, we are not a law firm and do not provide legal advice. Our AI helps draft and analyze contracts based on standard legal templates,
+                      No, EzBiz is not a law firm and does not provide legal advice. EzBiz's AI helps draft and analyze contracts based on standard legal templates,
                       but you should always have contracts reviewed by qualified legal professionals before signing.
                     </p>
                   </CardContent>
@@ -375,7 +375,7 @@ const Index = () => {
               <div className="text-center mt-16">
                 <h3 className="text-2xl font-bold mb-4">Ready to get started?</h3>
                 <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
-                  Join thousands of professionals who trust Contract Coach for their legal document needs.
+                  Join thousands of professionals who trust EzBiz for their legal document needs.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link to="/auth">

@@ -373,10 +373,8 @@ export const downloadAsDocx = async (content: string, filename: string = 'contra
             }
         });
 
-        const buffer = await Packer.toBuffer(doc);
-        const blob = new Blob([buffer], {
-            type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        });
+        // Use browser-compatible Packer.toBlob() instead of Node.js Packer.toBuffer()
+        const blob = await Packer.toBlob(doc);
 
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');

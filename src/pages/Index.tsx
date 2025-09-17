@@ -183,7 +183,7 @@ const Index = () => {
             <div className="hidden lg:block">
               <div className="relative">
                 <img
-                  src="/hero-image-placeholder.jpg"
+                  src="/Hero Image.png"
                   alt="Professional contract creator working with AI-powered tools"
                   className="rounded-lg shadow-xl w-full h-auto object-cover"
                   onError={(e) => {

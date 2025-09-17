@@ -1,8 +1,9 @@
-// Professional PDF generation using Puppeteer service
+// Professional PDF generation using pdf-lib service
 export const downloadAsPDF = async (content: string, filename: string = 'contract.pdf') => {
     try {
         // Import the PDF generation service
-        const { pdfGenerationService } = await import('../services/PDFGenerationService');
+        const { PDFGenerationService } = await import('../services/PDFGenerationService');
+        const pdfService = new PDFGenerationService();
 
         // Prepare contract data for the service
         const contractData = {
@@ -15,7 +16,7 @@ export const downloadAsPDF = async (content: string, filename: string = 'contrac
         };
 
         // Generate PDF using the professional service
-        const pdfBuffer = await pdfGenerationService.generateContractPDF(contractData);
+        const pdfBuffer = await pdfService.generateContractPDF(contractData);
 
         // Create blob and download
         const blob = new Blob([pdfBuffer], { type: 'application/pdf' });
@@ -29,8 +30,8 @@ export const downloadAsPDF = async (content: string, filename: string = 'contrac
         URL.revokeObjectURL(url);
 
     } catch (error) {
-        console.error('Error generating PDF with Puppeteer:', error);
-        // Fallback to basic PDF generation if Puppeteer fails
+        console.error('Error generating PDF with pdf-lib:', error);
+        // Fallback to basic PDF generation if pdf-lib fails
         await downloadAsPDFFallback(content, filename);
     }
 };

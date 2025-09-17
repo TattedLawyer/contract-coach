@@ -1,8 +1,4 @@
-import puppeteer, { Browser, Page } from 'puppeteer';
-import fs from 'fs/promises';
-import path from 'path';
-import handlebars from 'handlebars';
-import { TrainingDataAnalyzer } from './TrainingDataAnalyzer';
+import { PDFDocument, rgb, StandardFonts, PDFFont } from 'pdf-lib';
 
 interface ContractData {
     contract_title?: string;
@@ -15,399 +11,138 @@ interface ContractData {
 }
 
 export class PDFGenerationService {
-    private browser: Browser | null = null;
-    private templateCache: Map<string, HandlebarsTemplateDelegate> = new Map();
-    private trainingAnalyzer: TrainingDataAnalyzer;
-    private formatInsights: any = null;
-
     constructor() {
-        this.trainingAnalyzer = new TrainingDataAnalyzer();
+        // No initialization needed for pdf-lib
     }
 
     /**
-     * Initialize the PDF generation service and analyze training data
-     */
-    public async initialize(): Promise<void> {
-        if (!this.browser) {
-            this.browser = await puppeteer.launch({
-                headless: true,
-                args: [
-                    '--no-sandbox',
-                    '--disable-setuid-sandbox',
-                    '--disable-dev-shm-usage',
-                    '--disable-accelerated-2d-canvas',
-                    '--no-first-run',
-                    '--no-zygote',
-                    '--disable-gpu'
-                ]
-            });
-        }
-
-        // Analyze training data for format insights
-        if (!this.formatInsights) {
-            try {
-                console.log('🔍 Analyzing training data for format insights...');
-                const analysis = await this.trainingAnalyzer.analyzeTrainingData();
-                this.formatInsights = analysis.recommendedFormat;
-                console.log('✅ Training data analysis complete - using optimized format');
-            } catch (error) {
-                console.warn('⚠️ Could not analyze training data, using default format:', error);
-                this.formatInsights = this.getDefaultFormat();
-            }
-        }
-    }
-
-    /**
-     * Generate a professional PDF from contract data
+     * Generate a professional PDF document from contract data
      */
     public async generateContractPDF(contractData: ContractData): Promise<Buffer> {
-        await this.initialize();
-
-        if (!this.browser) {
-            throw new Error('Browser not initialized');
-        }
-
-        let page: Page | null = null;
-
         try {
-            // Create a new page
-            page = await this.browser.newPage();
+            const { contract_body, contract_title = 'Contract Document', revision_number = 1, generation_date } = contractData;
 
-            // Set viewport for consistent rendering
-            await page.setViewport({
-                width: 794, // A4 width in pixels at 96 DPI
-                height: 1123, // A4 height in pixels at 96 DPI
-                deviceScaleFactor: 1
+            // 1. Clean the contract text to remove unwanted content
+            const cleanedText = this.cleanContractText(contract_body);
+
+            // 2. Create a new PDF document in memory
+            const pdfDoc = await PDFDocument.create();
+            let page = pdfDoc.addPage();
+            const { width, height } = page.getSize();
+
+            // 3. Set up fonts and formatting
+            const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
+            const helveticaBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+            const fontSize = 12;
+            const titleSize = 18;
+            const margin = 50;
+            let yPosition = height - margin;
+
+            // 4. Add header/title
+            page.drawText(contract_title.toUpperCase(), {
+                x: margin,
+                y: yPosition,
+                font: helveticaBold,
+                size: titleSize,
+                color: rgb(0, 0, 0),
             });
 
-            // Generate HTML content from template
-            const htmlContent = await this.generateHTMLContent(contractData);
+            yPosition -= titleSize + 20;
 
-            // Set the content
-            await page.setContent(htmlContent, {
-                waitUntil: 'networkidle0',
-                timeout: 30000
+            // Add revision and date if provided
+            if (revision_number > 1) {
+                page.drawText(`Revision ${revision_number}`, {
+                    x: margin,
+                    y: yPosition,
+                    font: helveticaFont,
+                    size: fontSize - 2,
+                    color: rgb(0.4, 0.4, 0.4),
+                });
+                yPosition -= fontSize;
+            }
+
+            if (generation_date) {
+                page.drawText(`Generated: ${generation_date}`, {
+                    x: width - margin - 100,
+                    y: yPosition,
+                    font: helveticaFont,
+                    size: fontSize - 2,
+                    color: rgb(0.4, 0.4, 0.4),
+                });
+                yPosition -= fontSize + 10;
+            }
+
+            // 5. Add contract content with proper text wrapping
+            const lines = this.wrapText(cleanedText, helveticaFont, fontSize, width - 2 * margin);
+            const lineHeight = fontSize + 4;
+
+            for (const line of lines) {
+                if (yPosition < margin + lineHeight) {
+                    // Add new page if needed
+                    page = pdfDoc.addPage();
+                    yPosition = height - margin;
+                }
+
+                page.drawText(line, {
+                    x: margin,
+                    y: yPosition,
+                    font: helveticaFont,
+                    size: fontSize,
+                    color: rgb(0, 0, 0),
+                });
+
+                yPosition -= lineHeight;
+            }
+
+            // 6. Add footer
+            const footerY = margin / 2;
+            page.drawText('Generated by EZ Biz Contract', {
+                x: margin,
+                y: footerY,
+                font: helveticaFont,
+                size: fontSize - 2,
+                color: rgb(0.6, 0.6, 0.6),
             });
 
-            // Generate PDF with professional settings
-            const pdfBuffer = await page.pdf({
-                format: 'A4',
-                printBackground: true,
-                margin: {
-                    top: '1in',
-                    right: '1in',
-                    bottom: '1in',
-                    left: '1in'
-                },
-                displayHeaderFooter: false, // We handle footer in template
-                preferCSSPageSize: true,
-                timeout: 30000
-            });
+            // 7. Serialize the PDFDocument to bytes (a Uint8Array)
+            const pdfBytes = await pdfDoc.save();
 
-            return pdfBuffer;
+            // 8. Return the raw PDF data as a Buffer
+            return Buffer.from(pdfBytes);
 
         } catch (error) {
-            console.error('Error generating PDF:', error);
-            throw new Error(`Failed to generate PDF: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        } finally {
-            // Clean up page
-            if (page) {
-                try {
-                    await page.close();
-                } catch (closeError) {
-                    console.warn('Error closing page:', closeError);
-                }
-            }
+            console.error('❌ PDF generation error:', error);
+            throw new Error(`Failed to generate PDF: ${error.message}`);
         }
     }
 
     /**
-     * Generate HTML content from template and data
+     * Wrap text to fit within specified width
      */
-    private async generateHTMLContent(contractData: ContractData): Promise<string> {
-        try {
-            // Get the template
-            const template = await this.getTemplate();
+    private wrapText(text: string, font: PDFFont, fontSize: number, maxWidth: number): string[] {
+        const words = text.split(' ');
+        const lines: string[] = [];
+        let currentLine = '';
 
-            // Prepare template data
-            const templateData = {
-                contract_title: contractData.contract_title || 'Professional Contract',
-                contract_subtitle: contractData.contract_subtitle || 'Generated by EZ Biz Contract',
-                contract_body_html: this.formatContractBody(contractData.contract_body),
-                revision_number: contractData.revision_number || 1,
-                client_name: contractData.client_name,
-                generation_date: contractData.generation_date || new Date().toLocaleDateString(),
-                logo_url: contractData.logo_url || '/Andrometa Brand Kit.svg'
-            };
+        for (const word of words) {
+            const testLine = currentLine ? `${currentLine} ${word}` : word;
+            const textWidth = font.widthOfTextAtSize(testLine, fontSize);
 
-            // Compile template with data
-            return template(templateData);
-
-        } catch (error) {
-            console.error('Error generating HTML content:', error);
-            throw new Error(`Failed to generate HTML content: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        }
-    }
-
-    /**
-     * Get and cache the Handlebars template
-     */
-    private async getTemplate(): Promise<HandlebarsTemplateDelegate> {
-        const cacheKey = 'contract-template';
-
-        if (this.templateCache.has(cacheKey)) {
-            return this.templateCache.get(cacheKey)!;
-        }
-
-        try {
-            const templatePath = path.resolve(process.cwd(), 'src/templates/contract-template.html');
-            const templateSource = await fs.readFile(templatePath, 'utf8');
-            const template = handlebars.compile(templateSource);
-
-            this.templateCache.set(cacheKey, template);
-            return template;
-
-        } catch (error) {
-            console.error('Error loading template:', error);
-            throw new Error(`Failed to load template: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        }
-    }
-
-    /**
-     * Get default format when training data is not available
-     */
-    private getDefaultFormat(): any {
-        return {
-            structure: {
-                hasHeader: true,
-                hasFooter: true,
-                hasPageNumbers: true,
-                hasTableOfContents: false
-            },
-            typography: {
-                fontFamily: 'Calibri',
-                fontSize: '12pt',
-                lineHeight: '1.5',
-                headingHierarchy: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6']
-            },
-            layout: {
-                margins: '1in',
-                paragraphSpacing: '12pt',
-                sectionSpacing: '18pt',
-                alignment: 'justify'
-            },
-            elements: {
-                clauseNumbering: true,
-                signatureBlocks: true,
-                definitions: true,
-                schedules: false
-            }
-        };
-    }
-
-    /**
-     * Format raw contract text into clean HTML with professional structure
-     */
-    private formatContractBody(contractText: string): string {
-        if (!contractText || contractText.trim().length === 0) {
-            return '<p>No contract content available.</p>';
-        }
-
-        try {
-            // Clean the contract text by removing unwanted introduction text
-            let cleanedText = this.cleanContractText(contractText);
-
-            const lines = cleanedText.split('\n');
-            const htmlParts: string[] = [];
-            let inList = false;
-            let listType: 'ul' | 'ol' | null = null;
-
-            for (let i = 0; i < lines.length; i++) {
-                const line = lines[i].trim();
-                const nextLine = i + 1 < lines.length ? lines[i + 1].trim() : '';
-
-                // Handle empty lines
-                if (line === '') {
-                    if (inList) {
-                        htmlParts.push('</li>');
-                        inList = false;
-                        listType = null;
-                    }
-                    continue;
+            if (textWidth <= maxWidth) {
+                currentLine = testLine;
+            } else {
+                if (currentLine) {
+                    lines.push(currentLine);
                 }
-
-                // Handle headings
-                if (line.startsWith('# ')) {
-                    if (inList) {
-                        htmlParts.push('</li></ul>');
-                        inList = false;
-                        listType = null;
-                    }
-                    const headingText = this.escapeHtml(line.substring(2).trim());
-                    const styleAttrs = this.getHeadingStyleAttributes(1);
-                    htmlParts.push(`<h1${styleAttrs}>${headingText}</h1>`);
-                } else if (line.startsWith('## ')) {
-                    if (inList) {
-                        htmlParts.push('</li></ul>');
-                        inList = false;
-                        listType = null;
-                    }
-                    const headingText = this.escapeHtml(line.substring(3).trim());
-                    const styleAttrs = this.getHeadingStyleAttributes(2);
-                    htmlParts.push(`<h2${styleAttrs}>${headingText}</h2>`);
-                } else if (line.startsWith('### ')) {
-                    if (inList) {
-                        htmlParts.push('</li></ul>');
-                        inList = false;
-                        listType = null;
-                    }
-                    const headingText = this.escapeHtml(line.substring(4).trim());
-                    const styleAttrs = this.getHeadingStyleAttributes(3);
-                    htmlParts.push(`<h3${styleAttrs}>${headingText}</h3>`);
-                }
-                // Handle lists
-                else if (line.startsWith('- ') || line.startsWith('* ')) {
-                    const listItemText = this.formatInlineElements(line.substring(2).trim());
-
-                    if (!inList || listType !== 'ul') {
-                        if (inList) {
-                            htmlParts.push('</li></ul>');
-                        }
-                        htmlParts.push('<ul>');
-                        inList = true;
-                        listType = 'ul';
-                    }
-
-                    htmlParts.push(`<li>${listItemText}</li>`);
-                }
-                // Handle numbered lists
-                else if (/^\d+\.\s/.test(line)) {
-                    const listItemText = this.formatInlineElements(line.replace(/^\d+\.\s/, ''));
-
-                    if (!inList || listType !== 'ol') {
-                        if (inList) {
-                            htmlParts.push('</li></ol>');
-                        }
-                        htmlParts.push('<ol>');
-                        inList = true;
-                        listType = 'ol';
-                    }
-
-                    htmlParts.push(`<li>${listItemText}</li>`);
-                }
-                // Handle blockquotes
-                else if (line.startsWith('> ')) {
-                    if (inList) {
-                        htmlParts.push('</li></ul>');
-                        inList = false;
-                        listType = null;
-                    }
-                    const quoteText = this.escapeHtml(line.substring(2).trim());
-                    htmlParts.push(`<div class="quote">${quoteText}</div>`);
-                }
-                // Handle regular paragraphs
-                else {
-                    if (inList) {
-                        htmlParts.push('</li></ul>');
-                        inList = false;
-                        listType = null;
-                    }
-
-                    // Check if this is part of a multi-line paragraph
-                    let paragraphText = line;
-                    let j = i + 1;
-
-                    // Collect consecutive non-empty, non-heading, non-list lines
-                    while (j < lines.length &&
-                        lines[j].trim() !== '' &&
-                        !lines[j].trim().startsWith('#') &&
-                        !lines[j].trim().match(/^[-*_]{3,}$/) &&
-                        !lines[j].trim().startsWith('> ') &&
-                        !(/^\d+\.\s/.test(lines[j].trim())) &&
-                        !lines[j].trim().startsWith('- ') &&
-                        !lines[j].trim().startsWith('* ')) {
-                        paragraphText += ' ' + lines[j].trim();
-                        j++;
-                    }
-
-                    i = j - 1; // Skip the lines we processed
-
-                    const formattedText = this.formatInlineElements(paragraphText);
-                    const styleAttrs = this.getParagraphStyleAttributes();
-                    htmlParts.push(`<p${styleAttrs}>${formattedText}</p>`);
-                }
-            }
-
-            // Close any open list
-            if (inList) {
-                htmlParts.push(listType === 'ul' ? '</ul>' : '</ol>');
-            }
-
-            return htmlParts.join('\n');
-
-        } catch (error) {
-            console.error('Error formatting contract body:', error);
-            // Return a basic fallback
-            return `<p>${this.escapeHtml(contractText)}</p>`;
-        }
-    }
-
-    /**
-     * Format inline elements like bold, italic, code
-     */
-    private formatInlineElements(text: string): string {
-        if (!text) return '';
-
-        let formatted = this.escapeHtml(text);
-
-        // Handle bold text (**text**)
-        formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-
-        // Handle italic text (*text*)
-        formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
-
-        // Handle inline code (`code`)
-        formatted = formatted.replace(/`(.*?)`/g, '<code>$1</code>');
-
-        // Handle underlines (__text__)
-        formatted = formatted.replace(/__(.*?)__/g, '<u>$1</u>');
-
-        return formatted;
-    }
-
-    /**
-     * Generate paragraph style attributes based on training data insights
-     */
-    private getParagraphStyleAttributes(): string {
-        if (!this.formatInsights) {
-            return '';
-        }
-
-        const styles: string[] = [];
-
-        // Apply typography insights
-        if (this.formatInsights.typography) {
-            if (this.formatInsights.typography.lineHeight) {
-                styles.push(`line-height: ${this.formatInsights.typography.lineHeight}`);
+                currentLine = word;
             }
         }
 
-        // Apply layout insights
-        if (this.formatInsights.layout) {
-            if (this.formatInsights.layout.paragraphSpacing) {
-                styles.push(`margin: ${this.formatInsights.layout.paragraphSpacing} 0`);
-            }
-
-            if (this.formatInsights.layout.alignment) {
-                styles.push(`text-align: ${this.formatInsights.layout.alignment}`);
-            }
+        if (currentLine) {
+            lines.push(currentLine);
         }
 
-        if (styles.length > 0) {
-            return ` style="${styles.join('; ')};"`;
-        }
-
-        return '';
+        return lines;
     }
 
     /**
@@ -447,21 +182,6 @@ export class PDFGenerationService {
             /\[.*?\]/g, // Remove bracketed comments
             /^\s*\[.*?\]\s*$/gm, // Remove lines that are just bracketed comments
 
-            // Specific problematic patterns from PDF output
-            /```text\s+UPGRADED\s+CONTRACT/gi,
-            /```UPGRADED\s+CONTRACT/gi,
-            /```text/gi, // Remove any ```text patterns
-            /UPGRADED\s+CONTRACT[\s\S]*?```/gi, // Remove content after UPGRADED CONTRACT in code blocks
-            /^```[\s\S]*?UPGRADED\s+CONTRACT[\s\S]*?$/gm, // Remove entire lines with this pattern
-            /```[\s\S]*?UPGRADED[\s\S]*?```/gi, // Remove code blocks containing UPGRADED
-
-            // Additional contract-related code block patterns
-            /```[\s\S]*?CONTRACT[\s\S]*?```/gi, // Any code block containing CONTRACT
-            /```[\s\S]*?AGREEMENT[\s\S]*?```/gi, // Any code block containing AGREEMENT
-            /```[\s\S]*?REVISED[\s\S]*?```/gi, // Any code block containing REVISED
-            /^```\w*\s*$/gm, // Remove lines that are just opening code blocks
-            /^```\w+.*$/gm, // Remove lines that start with code blocks and have content
-
             // Headers that should be removed
             /^#+\s*(Contract|Agreement|Draft|Upgrade|Revised|Updated)/gim,
 
@@ -472,6 +192,10 @@ export class PDFGenerationService {
             /^I've prepared/gim,
             /^This is the/gim,
             /^As requested/gim,
+            /^The upgraded contract:/gim,
+            /^Upgraded Contract:/gim,
+            /^Revised Contract:/gim,
+            /^New Contract Version:/gim,
         ];
 
         // Apply all cleaning patterns
@@ -523,101 +247,4 @@ export class PDFGenerationService {
 
         return cleaned;
     }
-
-    /**
-     * Get heading style attributes based on training data insights
-     */
-    private getHeadingStyleAttributes(level: number): string {
-        if (!this.formatInsights) {
-            return '';
-        }
-
-        const styles: string[] = [];
-
-        // Apply typography insights
-        if (this.formatInsights.typography) {
-            if (this.formatInsights.typography.fontFamily) {
-                styles.push(`font-family: ${this.formatInsights.typography.fontFamily}`);
-            }
-
-            // Different sizes for different heading levels
-            const headingSizes = {
-                1: '20px',
-                2: '18px',
-                3: '16px',
-                4: '14px',
-                5: '12px',
-                6: '11px'
-            };
-
-            if (headingSizes[level as keyof typeof headingSizes]) {
-                styles.push(`font-size: ${headingSizes[level as keyof typeof headingSizes]}`);
-            }
-
-            if (this.formatInsights.typography.lineHeight) {
-                styles.push(`line-height: ${this.formatInsights.typography.lineHeight}`);
-            }
-        }
-
-        if (styles.length > 0) {
-            return ` style="${styles.join('; ')};"`;
-        }
-
-        return '';
-    }
-
-    /**
-     * Escape HTML characters to prevent XSS
-     */
-    private escapeHtml(text: string): string {
-        const htmlEntities: { [key: string]: string } = {
-            '&': '&amp;',
-            '<': '&lt;',
-            '>': '&gt;',
-            '"': '&quot;',
-            "'": '&#39;'
-        };
-
-        return text.replace(/[&<>"']/g, (char) => htmlEntities[char]);
-    }
-
-    /**
-     * Clean up resources
-     */
-    public async cleanup(): Promise<void> {
-        if (this.browser) {
-            try {
-                await this.browser.close();
-                this.browser = null;
-            } catch (error) {
-                console.warn('Error closing browser:', error);
-            }
-        }
-        this.templateCache.clear();
-    }
-
-    /**
-     * Get service health status
-     */
-    public async getHealthStatus(): Promise<{ healthy: boolean; message: string }> {
-        try {
-            if (!this.browser) {
-                await this.initialize();
-            }
-
-            if (this.browser && !this.browser.isConnected()) {
-                return { healthy: false, message: 'Browser is not connected' };
-            }
-
-            return { healthy: true, message: 'PDF generation service is healthy' };
-        } catch (error) {
-            return {
-                healthy: false,
-                message: `Service unhealthy: ${error instanceof Error ? error.message : 'Unknown error'}`
-            };
-        }
-    }
 }
-
-// Export singleton instance
-export const pdfGenerationService = new PDFGenerationService();

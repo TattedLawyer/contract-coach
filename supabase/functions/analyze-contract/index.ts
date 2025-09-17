@@ -1,6 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
+import { cleanContractText } from '../_shared/parsingUtils.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,71 +12,7 @@ const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
 const supabaseUrl = Deno.env.get('SUPABASE_URL');
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
-/**
- * Clean analysis response to remove unwanted introduction text
- */
-function cleanAnalysisResponse(text: string): string {
-  let cleaned = text;
-
-  // Remove common unwanted introduction text patterns from analysis
-  const unwantedPatterns = [
-    /Here is my analysis of the contract:/gi,
-    /Here's the analysis:/gi,
-    /Below is my analysis:/gi,
-    /I've analyzed the contract:/gi,
-    /The analysis is as follows:/gi,
-    /Here are the results:/gi,
-    /^#+\s*(Contract Analysis|Analysis Report)/gim,
-    /---[\s\S]*?---/g, // Remove markdown separators at the beginning
-
-    // Specific problematic patterns from PDF output
-    /```text\s+UPGRADED\s+CONTRACT/gi,
-    /```UPGRADED\s+CONTRACT/gi,
-    /```text/gi, // Remove any ```text patterns
-    /UPGRADED\s+CONTRACT[\s\S]*?```/gi, // Remove content after UPGRADED CONTRACT in code blocks
-    /^```[\s\S]*?UPGRADED\s+CONTRACT[\s\S]*?$/gm, // Remove entire lines with this pattern
-    /```[\s\S]*?UPGRADED[\s\S]*?```/gi, // Remove code blocks containing UPGRADED
-
-    // Additional contract-related code block patterns
-    /```[\s\S]*?CONTRACT[\s\S]*?```/gi, // Any code block containing CONTRACT
-    /```[\s\S]*?AGREEMENT[\s\S]*?```/gi, // Any code block containing AGREEMENT
-    /```[\s\S]*?REVISED[\s\S]*?```/gi, // Any code block containing REVISED
-    /^```\w*\s*$/gm, // Remove lines that are just opening code blocks
-    /^```\w+.*$/gm, // Remove lines that start with code blocks and have content
-  ];
-
-  // Apply all cleaning patterns
-  unwantedPatterns.forEach(pattern => {
-    cleaned = cleaned.replace(pattern, '');
-  });
-
-  // Remove excessive whitespace and empty lines at the beginning
-  cleaned = cleaned.replace(/^\s*\n+/gm, '');
-  cleaned = cleaned.trim();
-
-  // If the text still starts with unwanted content, try to find the actual analysis start
-  const analysisStartPatterns = [
-    /^#+\s*(Overall Grade|Grade|Summary|Strengths|Weaknesses)/im,
-    /^📊/im, // Emoji indicators
-    /^🎯/im,
-    /^📝/im,
-    /^✅/im,
-    /^⚠️/im,
-  ];
-
-  for (const pattern of analysisStartPatterns) {
-    const match = cleaned.match(pattern);
-    if (match && match.index > 0) {
-      // Only cut if we're removing a significant amount of unwanted text
-      if (match.index > 30) {
-        cleaned = cleaned.substring(match.index);
-        break;
-      }
-    }
-  }
-
-  return cleaned.trim();
-}
+// Analysis cleaning is now handled by the parsingUtils.ts shared library
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -276,10 +213,19 @@ ${trainingContext}
       throw new Error('No response generated from Gemini');
     }
 
-    let analysis = geminiData.candidates[0].content.parts[0].text;
+    let rawAiResponse = geminiData.candidates[0].content.parts[0].text;
+    console.log('🔍 RAW ANALYSIS RESPONSE LENGTH:', rawAiResponse.length);
+    console.log('🔍 RAW ANALYSIS RESPONSE PREVIEW:', rawAiResponse.substring(0, 200) + '...');
 
-    // Clean the analysis to remove any unwanted introduction text
-    analysis = cleanAnalysisResponse(analysis);
+    // 🧹 CRITICAL: FILTER THE DATA - Remove conversational artifacts
+    const analysis = cleanContractText(rawAiResponse);
+    console.log('✅ CLEANED ANALYSIS LENGTH:', analysis.length);
+    console.log('✅ CLEANED ANALYSIS PREVIEW:', analysis.substring(0, 200) + '...');
+
+    // Validate the cleaning quality
+    if (analysis.includes('Here is') || analysis.includes('```')) {
+        console.warn('⚠️ Warning: Some unwanted text may still be present in the cleaned analysis');
+    }
 
     return new Response(JSON.stringify({
       analysis,

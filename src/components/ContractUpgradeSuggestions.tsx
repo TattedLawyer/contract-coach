@@ -82,6 +82,13 @@ export const ContractUpgradeSuggestions = ({
 
             if (error) throw error;
 
+            console.log('🔄 UPGRADE API RESPONSE RECEIVED:');
+            console.log('Response data keys:', Object.keys(data));
+            console.log('Upgraded contract length:', data.upgradedContract?.length || 0);
+            console.log('Upgraded contract preview (first 300 chars):', data.upgradedContract?.substring(0, 300) || 'EMPTY');
+            console.log('Contains "Here is":', data.upgradedContract?.includes('Here is') || false);
+            console.log('Contains "```":', data.upgradedContract?.includes('```') || false);
+
             toast({
                 title: "Contract upgraded successfully!",
                 description: `Applied ${selectedSuggestionTexts.length} improvements.`,

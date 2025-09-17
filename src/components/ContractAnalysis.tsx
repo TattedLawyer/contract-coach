@@ -658,6 +658,13 @@ export const ContractAnalysis = () => {
   };
 
   const handleUpgradeComplete = (upgradedText: string, changes: string[]) => {
+    console.log('🎯 CONTRACT ANALYSIS - RECEIVING UPGRADE COMPLETE:');
+    console.log('Upgraded text length:', upgradedText.length);
+    console.log('Upgraded text preview (first 300 chars):', upgradedText.substring(0, 300));
+    console.log('Contains "Here is":', upgradedText.includes('Here is'));
+    console.log('Contains "```":', upgradedText.includes('```'));
+    console.log('Changes count:', changes.length);
+
     setUpgradedContract(upgradedText);
     setAppliedChanges(changes);
     setRevisionCount(prev => prev + 1);

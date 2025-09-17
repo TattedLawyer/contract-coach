@@ -1,6 +1,12 @@
 // Professional PDF generation using pdf-lib service
 export const downloadAsPDF = async (content: string, filename: string = 'contract.pdf') => {
     try {
+        console.log('📋 CLIENT PDF DOWNLOAD - INPUT CONTENT:');
+        console.log('Content Length:', content.length);
+        console.log('Content Preview (first 500 chars):', content.substring(0, 500));
+        console.log('Contains "Here is":', content.includes('Here is'));
+        console.log('Contains "```":', content.includes('```'));
+
         // Import the PDF generation service
         const { PDFGenerationService } = await import('../services/PDFGenerationService');
         const pdfService = new PDFGenerationService();
@@ -14,6 +20,10 @@ export const downloadAsPDF = async (content: string, filename: string = 'contrac
             generation_date: new Date().toLocaleDateString(),
             logo_url: '/Andrometa Brand Kit.svg'
         };
+
+        console.log('📋 CLIENT PDF DOWNLOAD - CONTRACT DATA FOR SERVICE:');
+        console.log('Contract Body Length:', contractData.contract_body?.length);
+        console.log('Contract Body Preview:', contractData.contract_body?.substring(0, 200));
 
         // Generate PDF using the professional service
         const pdfBuffer = await pdfService.generateContractPDF(contractData);

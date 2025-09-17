@@ -20,6 +20,14 @@ export class PDFGenerationService {
      */
     public async generateContractPDF(contractData: ContractData): Promise<Buffer> {
         try {
+            // --- START OF CRITICAL DIAGNOSTIC LOG ---
+            console.log("--- PDFGEN SERVICE INPUT ---");
+            console.log("Contract Body Length:", contractData.contract_body?.length || 0);
+            console.log("Contract Body Preview (first 500 chars):");
+            console.log(contractData.contract_body?.substring(0, 500) || "EMPTY");
+            console.log("--------------------------");
+            // --- END OF CRITICAL DIAGNOSTIC LOG ---
+
             const { contract_body, contract_title = 'Contract Document', revision_number = 1, generation_date } = contractData;
 
             // 1. Clean the contract text to remove unwanted content

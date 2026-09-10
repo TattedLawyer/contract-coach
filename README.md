@@ -1,73 +1,69 @@
-# Welcome to your Lovable project
+# Contract Coach
 
-## Project info
+**Upload an agreement. Get a clause-by-clause review grounded in a corpus of reference contracts, and a structured report.**
 
-**URL**: https://lovable.dev/projects/7b3553c4-740c-4c55-8f45-b787fded61ff
+Live demo: **https://contract-coach.vercel.app**
 
-## How can I edit this code?
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
-There are several ways of editing your application.
+Open-source. MIT licensed. Run it yourself, fork it, build on it.
 
-**Use Lovable**
+---
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/7b3553c4-740c-4c55-8f45-b787fded61ff) and start prompting.
+## What it does
 
-Changes made via Lovable will be committed automatically to this repo.
+1. **Ingest** — accepts PDF and DOCX, extracts clean text server-side (Mammoth for DOCX).
+2. **Retrieve** — pulls relevant clauses from a corpus of reference contracts in Postgres, so the model reasons against real drafting patterns. Retrieval-augmented generation over a domain corpus, not a single-shot prompt.
+3. **Analyze** — Gemini 2.0 Flash reviews the document clause by clause against what it retrieved.
+4. **Improve** — proposes specific redlines and rewrites, with a guided drafting wizard for building an agreement from scratch.
+5. **Report** — renders a structured PDF you can send on.
 
-**Use your preferred IDE**
+## Architecture
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+| Layer | Implementation |
+|---|---|
+| Frontend | React 18, TypeScript, Vite, Tailwind, Radix UI |
+| API | Supabase Edge Functions (Deno) — `analyze-contract`, `upgrade-contract`, `extract-text`, `assign-admin` |
+| Model | Gemini 2.0 Flash |
+| Retrieval | Reference-contract corpus in Postgres, queried per analysis |
+| Data | Postgres with row-level security; policies scoped to `auth.uid()` |
+| Access | Role-based access control with an admin assignment path |
+| Billing | Subscription gating on full analysis and upgrade output |
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+Auth and tenancy live at the data layer. Row-level security policies mean Postgres refuses an unauthorized read. The frontend cannot skip that check because the frontend is not the one making it.
 
-Follow these steps:
+## The retrieval design
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+Most contract-review tools send the document to a model and ask what looks wrong. That produces generic answers, because the model is reasoning from whatever it absorbed in training.
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+This one retrieves first. A corpus of reference agreements sits in Postgres; each analysis pulls the clauses relevant to the document in front of it and gives the model something concrete to compare against. The review comes back anchored to how these clauses get drafted in practice, not to an average of the internet.
 
-# Step 3: Install the necessary dependencies.
-npm i
+The same corpus drives the drafting wizard, so generated language matches the patterns the analysis is measuring against.
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+## Not legal advice
+
+This is software. It reviews documents and returns structured output. It does not create an attorney-client relationship, it is not a substitute for a lawyer, and no one should treat its output as legal advice.
+
+## Run it
+
+Requires a Supabase project and a Gemini API key.
+
+```
+npm install
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Edge functions deploy through the Supabase CLI. Database schema and row-level security policies are in `supabase/migrations`.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Related
 
-**Use GitHub Codespaces**
+- **[Switchboard](https://github.com/TattedLawyer/switchboard-ai-integration)** — supervised AI outreach and data integration. Connects systems that do not share data and puts an approval-gated agent on top.
+- **[YapWorld](https://yapworld.net)** · **[YapHealth](https://yaphealth.net)** · **[YapCare](https://yapcare.net)** — one agentic infrastructure serving consumer, health and aged-care markets.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## License
 
-## What technologies are used for this project?
+MIT — see [LICENSE](LICENSE).
 
-This project is built with:
+---
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/7b3553c4-740c-4c55-8f45-b787fded61ff) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+`RAG` · `retrieval-augmented generation` · `LLM` · `Gemini` · `document processing` · `Supabase` · `Edge Functions` · `Deno` · `PostgreSQL` · `row-level security` · `RBAC` · `React` · `TypeScript` · `Vite` · `Tailwind`
